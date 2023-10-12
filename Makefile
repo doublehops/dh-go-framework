@@ -50,4 +50,3 @@ build_test_container:
 run_test_container:
 	docker run --rm --name app-container --network mynetwork -p 8088:8088 api-test-image
 
-
