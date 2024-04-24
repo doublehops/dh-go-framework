@@ -2,11 +2,10 @@ package authorservice
 
 import (
 	"context"
+	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/service"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
-
-	"github.com/doublehops/dh-go-framework/internal/model"
 
 	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
@@ -25,21 +24,21 @@ func New(app *service.App, authorRepo *repositoryauthor.Author) *AuthorService {
 	}
 }
 
-func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model.Author, error) {
+func (s AuthorService) Create(ctx context.Context, record *author.Author) (*author.Author, error) {
 	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
 
-	if err := author.SetCreated(ctx); err != nil {
+	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
 
 	tx, _ := s.DB.BeginTx(ctx, nil)
 	defer tx.Rollback() // nolint: errcheck
 
-	err := s.authorRepo.Create(ctx, tx, author)
+	err := s.authorRepo.Create(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to save new record. "+err.Error(), nil)
 
-		return author, req.ErrCouldNotSaveRecord
+		return record, req.ErrCouldNotSaveRecord
 	}
 
 	err = tx.Commit()
@@ -47,8 +46,8 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, author.ID, a)
+	a := &author.Author{}
+	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -56,13 +55,13 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 	return a, nil
 }
 
-func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model.Author, error) {
-	author.SetUpdated(ctx)
+func (s AuthorService) Update(ctx context.Context, record *author.Author) (*author.Author, error) {
+	record.SetUpdated(ctx)
 
 	tx, _ := s.DB.BeginTx(ctx, nil)
 	defer tx.Rollback() // nolint: errcheck
 
-	err := s.authorRepo.Update(ctx, tx, author)
+	err := s.authorRepo.Update(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update record. "+err.Error(), nil)
 	}
@@ -72,8 +71,8 @@ func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, author.ID, a)
+	a := &author.Author{}
+	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -81,7 +80,7 @@ func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model
 	return a, nil
 }
 
-func (s AuthorService) DeleteByID(ctx context.Context, author *model.Author) error {
+func (s AuthorService) DeleteByID(ctx context.Context, author *author.Author) error {
 	tx, _ := s.DB.BeginTx(ctx, nil)
 	defer tx.Rollback() // nolint: errcheck
 
@@ -100,8 +99,8 @@ func (s AuthorService) DeleteByID(ctx context.Context, author *model.Author) err
 	return nil
 }
 
-func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int32) error {
-	err := s.authorRepo.GetByID(ctx, s.DB, ID, author)
+func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID int32) error {
+	err := s.authorRepo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -109,7 +108,7 @@ func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int
 	return nil
 }
 
-func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*model.Author, error) {
+func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
 	authors, err := s.authorRepo.GetAll(ctx, s.DB, p)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
