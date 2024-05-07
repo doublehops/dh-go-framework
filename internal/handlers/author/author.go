@@ -131,15 +131,15 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	author := &author.Author{}
-	err = h.srv.GetByID(ctx, author, int32(i))
+	record := &author.Author{}
+	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
 
 		return
 	}
 
-	if author.ID == 0 {
+	if record.ID == 0 {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
 
 		return
@@ -151,7 +151,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 	// 	return
 	// }
 
-	if err = h.srv.DeleteByID(ctx, author); err != nil {
+	if err = h.srv.DeleteByID(ctx, record); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ErrorProcessingRequestResp())
 
 		return
@@ -173,15 +173,15 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	author := &author.Author{}
-	err = h.srv.GetByID(ctx, author, int32(i))
+	record := &author.Author{}
+	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
 
 		return
 	}
 
-	if author.ID == 0 {
+	if record.ID == 0 {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
 
 		return
@@ -193,7 +193,7 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	// 	return
 	// }
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(author))
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(record))
 }
 
 func filterRules() []req.FilterRule {
