@@ -9,14 +9,16 @@ import (
 const (
 	repositoryTemplate    = "./internal/scaffold/templates/repository.tmpl"
 	repositorySQLTemplate = "./internal/scaffold/templates/repositorysql.tmpl"
+
+	repositoryStr = "repository"
 )
 
 // createRepository will create the repository.
 func (s *Scaffold) createRepository(ctx context.Context, m Model) error {
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.InsertFields, m.UpdateFields, m.ScanFields = s.getQueryFields(m.Columns)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.LowerCase+"repository")
-	repositoryFilename := fmt.Sprintf("%s/%s.go", path, m.LowerCase+"repository")
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.LowerCase+repositoryStr)
+	repositoryFilename := fmt.Sprintf("%s/%s.go", path, m.LowerCase+repositoryStr)
 	sqlFilename := fmt.Sprintf("%s/sql.go", path)
 
 	err := MkDir(path)

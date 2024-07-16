@@ -12,6 +12,10 @@ import (
 	req "{{.Module}}/internal/request"
 )
 
+const (
+	UnableToCommitTransactionErr = UnableToCommitTransactionErr
+)
+
 type {{.PascalCase}}Service struct {
 	*service.App
 	{{.CamelCase}}Repo *{{.LowerCase}}repository.{{.PascalCase}}
@@ -43,7 +47,7 @@ func (s {{.PascalCase}}Service) Create(ctx context.Context, record *model.{{.Pas
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, UnableToCommitTransactionErr+err.Error(), nil)
 	}
 
 	a := &model.{{.PascalCase}}{}
@@ -68,7 +72,7 @@ func (s {{.PascalCase}}Service) Update(ctx context.Context, record *model.{{.Pas
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, UnableToCommitTransactionErr+err.Error(), nil)
 	}
 
 	a := &model.{{.PascalCase}}{}
@@ -95,7 +99,7 @@ func (s {{.PascalCase}}Service) DeleteByID(ctx context.Context, record *model.{{
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, UnableToCommitTransactionErr+err.Error(), nil)
 	}
 
 	return nil
