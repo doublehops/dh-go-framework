@@ -42,3 +42,4 @@ To run:
 ```
 make scaffold -table=<table_name>
 ```
+
