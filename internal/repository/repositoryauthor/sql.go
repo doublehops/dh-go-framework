@@ -34,7 +34,7 @@ var deleteRecordSQL = `UPDATE author SET
 var selectByIDQuery = `SELECT 
     *
     FROM author
-    WHERE id=$1
+    WHERE id=?
     AND deleted_at IS NULL`
 
 var selectCollectionQuery = `SELECT 

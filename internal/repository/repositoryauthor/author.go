@@ -66,9 +66,9 @@ func (a *Author) Delete(ctx context.Context, tx *sql.Tx, model *model.Author) er
 }
 
 func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, model *model.Author) error {
-	err := DB.Select(model, selectByIDQuery, ID)
+	err := DB.Get(model, selectByIDQuery, ID)
 	if err != nil {
-		a.Log.Info(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
+		a.Log.Error(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
 
 		return fmt.Errorf("unable to fetch record %d", ID)
 	}

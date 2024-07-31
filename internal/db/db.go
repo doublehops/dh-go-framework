@@ -13,7 +13,7 @@ import (
 func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 	l.Log.Info("opening database connection")
 
-	connectStr := fmt.Sprintf("%s:%s@(%s:3306)/%s", cfg.User, cfg.Pass, cfg.Host, cfg.Name)
+	connectStr := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true", cfg.User, cfg.Pass, cfg.Host, cfg.Name)
 	db, err := sqlx.Connect("mysql", connectStr)
 	if err != nil {
 		l.Log.Error(fmt.Sprintf("unable to open db connection. %s", err))
