@@ -8,12 +8,12 @@ var insertRecordSQL = `INSERT INTO author (
     created_at,
     updated_at
 	  ) VALUES (
-	?,
-	?,
-	?,
-	?,
-	?,
-	?
+	":user_id",
+	":name",
+	":created_by",
+	":updated_by",
+	":created_at",
+	":updated_at"
 	)
 `
 
@@ -32,15 +32,9 @@ var deleteRecordSQL = `UPDATE author SET
 `
 
 var selectByIDQuery = `SELECT 
-    id,
-    user_id,
-    name,
-    created_by,
-    updated_by,
-    created_at,
-    updated_at
+    *
     FROM author
-    WHERE id=?
+    WHERE id=$1
     AND deleted_at IS NULL`
 
 var selectCollectionQuery = `SELECT 

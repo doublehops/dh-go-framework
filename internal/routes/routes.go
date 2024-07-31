@@ -6,7 +6,7 @@ import (
 	group "github.com/mythrnr/httprouter-group"
 
 	"github.com/doublehops/dh-go-framework/internal/handlers/author"
-	"github.com/doublehops/dh-go-framework/internal/handlers/mynewtable"
+	// "github.com/doublehops/dh-go-framework/internal/handlers/mynewtable"
 )
 
 func GetV1Routes(app *service.App) *group.RouteGroup {
@@ -23,20 +23,20 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 
 	// New routes created by scaffolding can be added here.
 
-	myNewTableHandle := mynewtable.New(app)
-
-	myNewTableGroup := group.New("/my-new-table")
-	myNewTableGroup.GET(myNewTableHandle.GetAll).Middleware(middleware.AuthMiddleware)
-	myNewTableGroup.Children(
-		group.New("/:id").GET(myNewTableHandle.GetByID),
-		group.New("").POST(myNewTableHandle.Create),
-		group.New("/:id").PUT(myNewTableHandle.UpdateByID),
-		group.New("/:id").DELETE(myNewTableHandle.DeleteByID),
-	)
+	// myNewTableHandle := mynewtable.New(app)
+	//
+	// myNewTableGroup := group.New("/my-new-table")
+	// myNewTableGroup.GET(myNewTableHandle.GetAll).Middleware(middleware.AuthMiddleware)
+	// myNewTableGroup.Children(
+	// 	group.New("/:id").GET(myNewTableHandle.GetByID),
+	// 	group.New("").POST(myNewTableHandle.Create),
+	// 	group.New("/:id").PUT(myNewTableHandle.UpdateByID),
+	// 	group.New("/:id").DELETE(myNewTableHandle.DeleteByID),
+	// )
 
 	g := group.New("/v1").Children(
 		authorGroup,
-		myNewTableGroup,
+		// myNewTableGroup,
 		// Add new groups here.
 	)
 

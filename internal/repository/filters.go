@@ -9,6 +9,10 @@ import (
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
 
+type Filter struct {
+	Order Order
+}
+
 type Order string
 
 const (
@@ -62,7 +66,7 @@ func addPagination(query string, pagination *req.Request, includePagination bool
 
 	params := []any{pagination.Offset, pagination.PerPage}
 
-	return query + " LIMIT ?, ?", params
+	return query + " LIMIT :offset, :perPage", params
 }
 
 func addFilters(query string, filters []req.FilterRule) (string, req.Params) {

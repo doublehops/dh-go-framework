@@ -109,7 +109,7 @@ func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int
 }
 
 func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*model.Author, error) {
-	authors, err := s.authorRepo.GetAll(ctx, s.DB, p)
+	authors, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
 	}

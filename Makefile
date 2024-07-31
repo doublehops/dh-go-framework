@@ -14,7 +14,7 @@ test:
 
 SHELL := /bin/bash
 docker_up:
-	source .env && docker-compose -f docker-compose.yml up -d
+	source .env && docker compose -f docker-compose.yml up -d
 
 docker_down:
 	docker-compose -f docker-compose.yml down
