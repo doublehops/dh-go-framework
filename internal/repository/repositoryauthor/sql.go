@@ -8,12 +8,12 @@ var insertRecordSQL = `INSERT INTO author (
     created_at,
     updated_at
 	  ) VALUES (
-	":user_id",
-	":name",
-	":created_by",
-	":updated_by",
-	":created_at",
-	":updated_at"
+	:user_id,
+	:name,
+	:created_by,
+	:updated_by,
+	:created_at,
+	:updated_at
 	)
 `
 

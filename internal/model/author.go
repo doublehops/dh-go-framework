@@ -8,7 +8,7 @@ import (
 
 type Author struct {
 	BaseModel
-	Name string `json:"name"`
+	Name string `json:"name" db:"name"`
 }
 
 func (a *Author) getRules() []validator.Rule {

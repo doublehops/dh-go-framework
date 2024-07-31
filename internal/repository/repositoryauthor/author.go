@@ -22,8 +22,8 @@ func New(logger *logga.Logga) *Author {
 	}
 }
 
-func (a *Author) Create(ctx context.Context, tx *sql.Tx, model *model.Author) error {
-	result, err := tx.Exec(insertRecordSQL, model)
+func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *model.Author) error {
+	result, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
 		a.Log.Error(ctx, errMsg, nil)
@@ -36,7 +36,7 @@ func (a *Author) Create(ctx context.Context, tx *sql.Tx, model *model.Author) er
 		return err
 	}
 
-	model.ID = int32(lastInsertID)
+	record.ID = int32(lastInsertID)
 
 	return nil
 }

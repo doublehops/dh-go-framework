@@ -31,7 +31,7 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
 
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	err := s.authorRepo.Create(ctx, tx, author)
