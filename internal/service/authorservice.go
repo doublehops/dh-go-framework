@@ -55,7 +55,7 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model.Author, error) {
 	author.SetUpdated(ctx)
 
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	err := s.authorRepo.Update(ctx, tx, author)
@@ -78,7 +78,7 @@ func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model
 }
 
 func (s AuthorService) DeleteByID(ctx context.Context, author *model.Author) error {
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	author.SetDeleted(ctx)
