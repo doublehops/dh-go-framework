@@ -76,107 +76,24 @@ func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, model *mode
 	return nil
 }
 
-// func (a *Author) GetAllXXX(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*model.Author, error) {
-// 	var (
-// 		authors []*model.Author
-// 		rows    *sql.Rows
-// 		err     error
-// 	)
-//
-// 	countQ, countParams := repository.BuildQuery(selectCollectionCountQuery, p, true)
-// 	count, err := repository.GetRecordCount(DB, countQ, countParams)
-// 	if err != nil {
-// 		a.Log.Error(ctx, "GetAll()", logga.KVPs{"err": err})
-// 	}
-// 	p.SetRecordCount(count)
-//
-// 	q, params := repository.BuildQuery(selectCollectionQuery, p, false)
-//
-// 	a.Log.Debug(ctx, "GetAll()", logga.KVPs{"query": q})
-// 	if len(params) == 0 {
-// 		rows, err = DB.Query(q)
-// 	} else {
-// 		rows, err = DB.Query(q, params...)
-// 	}
-// 	if err != nil {
-// 		a.Log.Error(ctx, "GetAll() unable to fetch rows", logga.KVPs{"err": err})
-//
-// 		return authors, fmt.Errorf("unable to fetch rows")
-// 	}
-// 	defer rows.Close()
-// 	if rows.Err() != nil {
-// 		a.Log.Error(ctx, "error with rows.Err(). "+rows.Err().Error(), nil)
-//
-// 		return authors, err
-// 	}
-//
-// 	for rows.Next() {
-// 		var record model.Author
-// 		if err = rows.Scan(&record.ID, &record.UserID, &record.Name, &record.CreatedBy, &record.UpdatedBy, &record.CreatedAt, &record.UpdatedAt); err != nil {
-// 			return authors, fmt.Errorf("unable to fetch rows. %s", err)
-// 		}
-//
-// 		authors = append(authors, &record)
-// 	}
-//
-// 	return authors, nil
-// }
-
 func (a *Author) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*model.Author, error) {
 	var (
 		records []*model.Author
-		// rows    *sql.Rows
-		err error
+		err     error
 	)
 
 	countQ, countParams := repository.BuildQuery(selectCollectionCountQuery, p, true)
 	count, err := repository.GetRecordCount(DB, countQ, countParams)
 	if err != nil {
-		a.Log.Error(ctx, "GetAll()", logga.KVPs{"err": err})
+		a.Log.Error(ctx, "GetCollection()", logga.KVPs{"err": err})
 	}
 	p.SetRecordCount(count)
 
 	q, params := repository.BuildQuery(selectCollectionQuery, p, false)
-	err = DB.Select(records, q, params)
+	err = DB.Select(&records, q, params...)
+	if err != nil {
+		return records, fmt.Errorf("unable to retrieve records: %s", err.Error())
+	}
 
 	return records, nil
-
-	// countQ, countParams := repository.BuildQuery(selectCollectionCountQuery, p, true)
-	// var count int32 = 0
-	// err = repository.GetRecordCount(DB, &count, countQ, countParams)
-	// if err != nil {
-	// 	a.Log.Error(ctx, "GetAll()", logga.KVPs{"err": err})
-	// }
-	// p.SetRecordCount(count)
-	//
-	// q, params := repository.BuildQuery(selectCollectionQuery, p, false)
-	//
-	// a.Log.Debug(ctx, "GetAll()", logga.KVPs{"query": q})
-	// if len(params) == 0 {
-	// 	rows, err = DB.Query(q)
-	// } else {
-	// 	rows, err = DB.Query(q, params...)
-	// }
-	// if err != nil {
-	// 	a.Log.Error(ctx, "GetAll() unable to fetch rows", logga.KVPs{"err": err})
-	//
-	// 	return authors, fmt.Errorf("unable to fetch rows")
-	// }
-	// defer rows.Close()
-	// if rows.Err() != nil {
-	// 	a.Log.Error(ctx, "error with rows.Err(). "+rows.Err().Error(), nil)
-	//
-	// 	return authors, err
-	// }
-	//
-	// for rows.Next() {
-	// 	var record model.Author
-	// 	if err = rows.Scan(&record.ID, &record.UserID, &record.Name, &record.CreatedBy, &record.UpdatedBy, &record.CreatedAt, &record.UpdatedAt); err != nil {
-	// 		return authors, fmt.Errorf("unable to fetch rows. %s", err)
-	// 	}
-	//
-	// 	authors = append(authors, &record)
-	// }
-
-	// return authors, nil
 }

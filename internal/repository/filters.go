@@ -66,7 +66,7 @@ func addPagination(query string, pagination *req.Request, includePagination bool
 
 	params := []any{pagination.Offset, pagination.PerPage}
 
-	return query + " LIMIT :offset, :perPage", params
+	return query + " LIMIT ?, ?", params
 }
 
 func addFilters(query string, filters []req.FilterRule) (string, req.Params) {
