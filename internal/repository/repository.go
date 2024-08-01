@@ -28,21 +28,6 @@ func GetRecordCount(DB *sqlx.DB, q string, params []any) (int32, error) {
 			return c.Count, fmt.Errorf("unable to fetch row. %s", err)
 		}
 	}
-	// defer row.Close()
-	// if row.Err() != nil {
-	// 	return fmt.Errorf("error in row.Err(). " + row.Err().Error())
-	// }
-	//
-	// if err != nil {
-	// 	return fmt.Errorf("unable to run count query. %s", err)
-	// }
-	//
-	// for row.Next() {
-	// 	err = row.Scan(&count)
-	// 	if err != nil {
-	// 		return fmt.Errorf("unable to scan query result. %s", err)
-	// 	}
-	// }
 
 	return c.Count, err
 }
