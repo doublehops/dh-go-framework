@@ -1,14 +1,14 @@
 package service
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model"
 )
 
 type App struct {
-	DB  *sql.DB
+	DB  *sqlx.DB
 	Log *logga.Logga
 }
 

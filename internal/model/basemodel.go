@@ -14,13 +14,13 @@ type Model interface {
 }
 
 type BaseModel struct {
-	ID        int32      `json:"id"`
-	UserID    int32      `json:"userId"`
-	CreatedBy int32      `json:"createdBy"`
-	UpdatedBy int32      `json:"updatedBy"`
-	CreatedAt *time.Time `json:"createdAt"`
-	UpdatedAt *time.Time `json:"updatedAt"`
-	DeletedAt *time.Time `json:"deletedAt"`
+	ID        int32      `json:"id" db:"id"`
+	UserID    int32      `json:"userId" db:"user_id"`
+	CreatedBy int32      `json:"createdBy" db:"created_by"`
+	UpdatedBy int32      `json:"updatedBy" db:"updated_by"`
+	CreatedAt *time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt *time.Time `json:"updatedAt" db:"updated_at"`
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
 // Deprecated - remove
@@ -31,14 +31,14 @@ func (bm *BaseModel) GetUserID() int32 {
 func (bm *BaseModel) SetCreated(ctx context.Context) error {
 	userID := ctx.Value(app.UserIDKey)
 	if userID != nil {
-		uID, ok := userID.(int)
+		uID, ok := userID.(int32)
 		if !ok {
 			return fmt.Errorf("unable to convert userID to int")
 		}
 
-		bm.CreatedBy = int32(uID)
-		bm.UpdatedBy = int32(uID)
-		bm.UserID = int32(uID)
+		bm.CreatedBy = uID
+		bm.UpdatedBy = uID
+		bm.UserID = uID
 	}
 
 	t := time.Now()

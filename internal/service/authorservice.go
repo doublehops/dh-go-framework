@@ -7,7 +7,6 @@ import (
 
 	"github.com/doublehops/dh-go-framework/internal/model"
 
-	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
@@ -25,13 +24,11 @@ func New(app *App, authorRepo *repositoryauthor.Author) *AuthorService {
 }
 
 func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model.Author, error) {
-	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
-
 	if err := author.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
 
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	err := s.authorRepo.Create(ctx, tx, author)
@@ -109,7 +106,7 @@ func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int
 }
 
 func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*model.Author, error) {
-	authors, err := s.authorRepo.GetAll(ctx, s.DB, p)
+	authors, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
 	}

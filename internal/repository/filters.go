@@ -9,6 +9,10 @@ import (
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
 
+type Filter struct {
+	Order Order
+}
+
 type Order string
 
 const (

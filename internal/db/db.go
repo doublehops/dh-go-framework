@@ -1,24 +1,23 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 
-	// Import sql driver to register itself with the database/sql package.
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
 
-func New(l *logga.Logga, cfg config.DB) (*sql.DB, error) {
+func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 	l.Log.Info("opening database connection")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true", cfg.User, cfg.Pass, cfg.Host, cfg.Name)
-
-	db, err := sql.Open("mysql", dsn)
+	connectStr := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true", cfg.User, cfg.Pass, cfg.Host, cfg.Name)
+	db, err := sqlx.Connect("mysql", connectStr)
 	if err != nil {
-		l.Log.Error(fmt.Sprintf("unable to create db connection. %s", err))
+		l.Log.Error(fmt.Sprintf("unable to open db connection. %s", err))
+
 		return db, err
 	}
 
