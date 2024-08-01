@@ -2,7 +2,6 @@ package repositoryauthor
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -42,8 +41,8 @@ func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *model.Author) 
 	return nil
 }
 
-func (a *Author) Update(ctx context.Context, tx *sql.Tx, model *model.Author) error {
-	_, err := tx.Exec(updateRecordSQL, model.Name, model.UpdatedBy, model.UpdatedAt, model.ID)
+func (a *Author) Update(ctx context.Context, tx *sqlx.Tx, model *model.Author) error {
+	_, err := tx.NamedExec(updateRecordSQL, model)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
 		a.Log.Error(ctx, errMsg, nil)
@@ -54,8 +53,8 @@ func (a *Author) Update(ctx context.Context, tx *sql.Tx, model *model.Author) er
 	return nil
 }
 
-func (a *Author) Delete(ctx context.Context, tx *sql.Tx, model *model.Author) error {
-	_, err := tx.Exec(deleteRecordSQL, model.UpdatedBy, model.UpdatedAt, model.DeletedAt, model.ID)
+func (a *Author) Delete(ctx context.Context, tx *sqlx.Tx, model *model.Author) error {
+	_, err := tx.NamedExec(deleteRecordSQL, model)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
 		a.Log.Error(ctx, errMsg, nil)
@@ -66,8 +65,8 @@ func (a *Author) Delete(ctx context.Context, tx *sql.Tx, model *model.Author) er
 	return nil
 }
 
-func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, model *model.Author) error {
-	err := DB.Get(model, selectByIDQuery, ID)
+func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *model.Author) error {
+	err := DB.Get(record, selectByIDQuery, ID)
 	if err != nil {
 		a.Log.Error(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
 

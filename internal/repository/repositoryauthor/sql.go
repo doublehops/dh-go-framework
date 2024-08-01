@@ -18,17 +18,17 @@ var insertRecordSQL = `INSERT INTO author (
 `
 
 var updateRecordSQL = `UPDATE author SET 
-	name=?,
-    updated_by=?,
-    updated_at=?
-	WHERE id=?
+	name=:name,
+    updated_by=:updated_by,
+    updated_at=:updated_at
+	WHERE id=:id
 `
 
 var deleteRecordSQL = `UPDATE author SET 
-    updated_by=?,
-    updated_at=?,
-    deleted_at=?
-	WHERE id=?
+    updated_by=:updated_by,
+    updated_at=:updated_at,
+    deleted_at=:deleted_at
+	WHERE id=:id
 `
 
 var selectByIDQuery = `SELECT 
