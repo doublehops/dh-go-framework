@@ -161,7 +161,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 
 func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
-	// userID := h.base.GetUser(ctx)
+	userID := h.base.GetUser(ctx)
 	h.srv.Log.Info(ctx, "Request made to Get author", nil)
 
 	ID := ps.ByName("id")
@@ -186,11 +186,11 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	// if !h.srv.HasPermission(userID, author) {
-	// 	h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
-	//
-	// 	return
-	// }
+	if !h.srv.HasPermission(userID, author) {
+		h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
+
+		return
+	}
 
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(author))
 }
