@@ -31,14 +31,14 @@ func (bm *BaseModel) GetUserID() int32 {
 func (bm *BaseModel) SetCreated(ctx context.Context) error {
 	userID := ctx.Value(app.UserIDKey)
 	if userID != nil {
-		uID, ok := userID.(int)
+		uID, ok := userID.(int32)
 		if !ok {
 			return fmt.Errorf("unable to convert userID to int")
 		}
 
-		bm.CreatedBy = int32(uID)
-		bm.UpdatedBy = int32(uID)
-		bm.UserID = int32(uID)
+		bm.CreatedBy = uID
+		bm.UpdatedBy = uID
+		bm.UserID = uID
 	}
 
 	t := time.Now()

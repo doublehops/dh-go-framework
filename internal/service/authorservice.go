@@ -7,7 +7,6 @@ import (
 
 	"github.com/doublehops/dh-go-framework/internal/model"
 
-	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
@@ -25,8 +24,6 @@ func New(app *App, authorRepo *repositoryauthor.Author) *AuthorService {
 }
 
 func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model.Author, error) {
-	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
-
 	if err := author.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
