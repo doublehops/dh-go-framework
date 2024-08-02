@@ -80,7 +80,7 @@ func getContextAtts(ctx context.Context) []any {
 	}
 
 	if userID := ctx.Value(app.UserIDKey); userID != nil {
-		args = append(args, app.UserIDKey, userID)
+		args = append(args, app.UserIDKey.ToString(), userID)
 	}
 
 	return args
