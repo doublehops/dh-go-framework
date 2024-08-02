@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
-
-	_ "github.com/go-sql-driver/mysql"
 
 	migrate "github.com/doublehops/go-migration"
 )

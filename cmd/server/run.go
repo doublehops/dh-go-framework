@@ -8,13 +8,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/routes"
 	"github.com/doublehops/dh-go-framework/internal/runflags"
 	"github.com/doublehops/dh-go-framework/internal/service"
-	"github.com/julienschmidt/httprouter"
 )
 
 func main() {

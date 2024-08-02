@@ -2,7 +2,6 @@ package scaffold
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
@@ -10,13 +9,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
 
 const goModuleFile = "./go.mod"
 
 type Scaffold struct {
-	DB  *sql.DB
+	DB  *sqlx.DB
 	l   *logga.Logga
 	pwd string
 
@@ -84,7 +85,7 @@ const (
 	typeDatetime columnType = "*datetime"
 )
 
-func New(pwd string, cfg Config, tableName string, db *sql.DB, logga *logga.Logga) *Scaffold {
+func New(pwd string, cfg Config, tableName string, db *sqlx.DB, logga *logga.Logga) *Scaffold {
 	return &Scaffold{
 		pwd:       pwd,
 		DB:        db,
