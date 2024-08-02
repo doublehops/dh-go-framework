@@ -6,6 +6,7 @@ run:
 gofmt:
 	gofumpt -l -w .
 
+# To fix permissions issue, run: sudo chown -R $(whoami) .db-data/
 lint:
 	golangci-lint --config ./ci/.golangci-lint.yml run
 
