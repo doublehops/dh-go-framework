@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-    _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/go-migration/helpers"
@@ -16,7 +16,7 @@ type Action struct {
 	Number int
 	Name   string
 
-	DB *sqlx.DB
+	DB   *sqlx.DB
 	Path string
 }
 
