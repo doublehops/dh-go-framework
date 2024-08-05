@@ -10,12 +10,12 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
+	"github.com/doublehops/dh-go-framework/internal/authorservice"
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/routes"
 	"github.com/doublehops/dh-go-framework/internal/runflags"
-	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func run() error {
 		return fmt.Errorf("error creating database connection. %s", err.Error())
 	}
 
-	App := &service.App{
+	App := &authorservice.App{
 		DB:  DB,
 		Log: l,
 	}
@@ -67,7 +67,7 @@ func run() error {
 	l.Info(ctx, "Starting server on port :8080", nil)
 
 	// todo - This really needs to be replaced with something that allows timeouts.
-	err = http.ListenAndServe(":8080", mux) // nolint:gosec
+	err = http.ListenAndServe(":8080", mux) // nolint:gosec // @todo - remove this exception.
 	if err != nil {
 		return fmt.Errorf("unable to start server. %s", err.Error())
 	}

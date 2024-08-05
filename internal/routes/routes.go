@@ -1,15 +1,15 @@
 package routes
 
 import (
+	"github.com/doublehops/dh-go-framework/internal/authorservice"
 	"github.com/doublehops/dh-go-framework/internal/middleware"
-	"github.com/doublehops/dh-go-framework/internal/service"
 	group "github.com/mythrnr/httprouter-group"
 
 	"github.com/doublehops/dh-go-framework/internal/handlers/author"
 	// "github.com/doublehops/dh-go-framework/internal/handlers/mynewtable"
 )
 
-func GetV1Routes(app *service.App) *group.RouteGroup {
+func GetV1Routes(app *authorservice.App) *group.RouteGroup {
 	authorHandle := author.New(app)
 
 	authorGroup := group.New("/author")

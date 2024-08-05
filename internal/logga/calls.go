@@ -2,6 +2,7 @@ package logga
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/tools"
@@ -12,10 +13,8 @@ func (l *Logga) Debug(ctx context.Context, msg string, KVP KVPs) {
 	if KVP == nil {
 		KVP = KVPs{}
 	}
-	f := tools.CurrentFunction()
-	KVP["func"] = f
-	args := getArguments(ctx, KVP)
-	l.Log.DebugContext(ctx, msg, args...)
+	KVP["func"] = tools.CurrentFunction()
+	l.Log.DebugContext(ctx, msg, addArgs(ctx, KVP)...)
 }
 
 // Info - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
@@ -23,10 +22,8 @@ func (l *Logga) Info(ctx context.Context, msg string, KVP KVPs) {
 	if KVP == nil {
 		KVP = KVPs{}
 	}
-	f := tools.CurrentFunction()
-	KVP["func"] = f
-	args := getArguments(ctx, KVP)
-	l.Log.InfoContext(ctx, msg, args...)
+	KVP["func"] = tools.CurrentFunction()
+	l.Log.InfoContext(ctx, msg, addArgs(ctx, KVP)...)
 }
 
 // Warn - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
@@ -34,10 +31,8 @@ func (l *Logga) Warn(ctx context.Context, msg string, KVP KVPs) {
 	if KVP == nil {
 		KVP = KVPs{}
 	}
-	f := tools.CurrentFunction()
-	KVP["func"] = f
-	args := getArguments(ctx, KVP)
-	l.Log.WarnContext(ctx, msg, args...)
+	KVP["func"] = tools.CurrentFunction()
+	l.Log.WarnContext(ctx, msg, addArgs(ctx, KVP)...)
 }
 
 // Error - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
@@ -45,43 +40,41 @@ func (l *Logga) Error(ctx context.Context, msg string, KVP KVPs) {
 	if KVP == nil {
 		KVP = KVPs{}
 	}
-	f := tools.CurrentFunction()
-	KVP["func"] = f
-	args := getArguments(ctx, KVP)
-	l.Log.ErrorContext(ctx, msg, args...)
+	KVP["func"] = tools.CurrentFunction()
+	l.Log.ErrorContext(ctx, msg, addArgs(ctx, KVP)...)
 }
 
-// getArguments will get retrieve additional values from context and KVPs.
-func getArguments(ctx context.Context, KVPs KVPs) []any {
-	ctxArgs := getContextAtts(ctx)
+// addArgs will add arguments as slog.Int, slog.String, slog.Any, etc...
+func addArgs(ctx context.Context, KVPs KVPs) []any {
+	var atts []any
 
-	var args []any
+	ctxArgs := getContextKVPs(ctx)
+	for key, value := range ctxArgs {
+		KVPs[key] = value
+	}
+
 	for key, value := range KVPs {
-		args = append(args, key, value)
+		atts = append(atts, slog.Any(key, value))
 	}
 
-	if len(ctxArgs) > 0 {
-		args = append(args, ctxArgs...)
-	}
-
-	return args
+	return atts
 }
 
-// getContextAtts will retrieve known variables from context to add the log messages.
-func getContextAtts(ctx context.Context) []any {
-	var args []interface{}
+// getContextKVPs will check for each known context variable and add to response.
+func getContextKVPs(ctx context.Context) KVPs {
+	pairs := KVPs{}
 
 	if ctx == nil {
-		return args
+		return pairs
 	}
 
-	if traceID := ctx.Value("traceID"); traceID != nil {
-		args = append(args, "traceID", traceID)
+	if traceID := ctx.Value(app.TraceIDKey); traceID != nil {
+		pairs[app.TraceIDKey.String()] = traceID
 	}
 
-	if userID := ctx.Value(app.UserIDKey); userID != nil {
-		args = append(args, app.UserIDKey.ToString(), userID)
+	if traceID := ctx.Value(app.UserIDKey); traceID != nil {
+		pairs[app.UserIDKey.String()] = traceID
 	}
 
-	return args
+	return pairs
 }
