@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
-	"github.com/doublehops/dh-go-framework/internal/model"
+	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/repository"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
@@ -22,7 +22,7 @@ func New(logger *logga.Logga) *Author {
 	}
 }
 
-func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *model.Author) error {
+func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *author.Author) error {
 	result, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -41,7 +41,7 @@ func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *model.Author) 
 	return nil
 }
 
-func (a *Author) Update(ctx context.Context, tx *sqlx.Tx, model *model.Author) error {
+func (a *Author) Update(ctx context.Context, tx *sqlx.Tx, model *author.Author) error {
 	_, err := tx.NamedExec(updateRecordSQL, model)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -53,7 +53,7 @@ func (a *Author) Update(ctx context.Context, tx *sqlx.Tx, model *model.Author) e
 	return nil
 }
 
-func (a *Author) Delete(ctx context.Context, tx *sqlx.Tx, model *model.Author) error {
+func (a *Author) Delete(ctx context.Context, tx *sqlx.Tx, model *author.Author) error {
 	_, err := tx.NamedExec(deleteRecordSQL, model)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -65,7 +65,7 @@ func (a *Author) Delete(ctx context.Context, tx *sqlx.Tx, model *model.Author) e
 	return nil
 }
 
-func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *model.Author) error {
+func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *author.Author) error {
 	err := DB.Get(record, selectByIDQuery, ID)
 	if err != nil {
 		a.Log.Error(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
@@ -76,9 +76,9 @@ func (a *Author) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *mod
 	return nil
 }
 
-func (a *Author) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*model.Author, error) {
+func (a *Author) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*author.Author, error) {
 	var (
-		records []*model.Author
+		records []*author.Author
 		err     error
 	)
 

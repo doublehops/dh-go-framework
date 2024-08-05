@@ -10,12 +10,12 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/doublehops/dh-go-framework/internal/authorservice"
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/routes"
 	"github.com/doublehops/dh-go-framework/internal/runflags"
+	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func run() error {
 		return fmt.Errorf("error creating database connection. %s", err.Error())
 	}
 
-	App := &authorservice.App{
+	App := &service.App{
 		DB:  DB,
 		Log: l,
 	}

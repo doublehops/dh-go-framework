@@ -1,4 +1,4 @@
-package authorservice
+package service
 
 import (
 	"github.com/jmoiron/sqlx"

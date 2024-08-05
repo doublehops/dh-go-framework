@@ -7,12 +7,13 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/doublehops/dh-go-framework/internal/authorservice"
 	"github.com/doublehops/dh-go-framework/internal/handlers"
 	"github.com/doublehops/dh-go-framework/internal/logga"
-	"github.com/doublehops/dh-go-framework/internal/model"
+	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/service"
+	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
 )
 
 type Handle struct {
@@ -21,7 +22,7 @@ type Handle struct {
 	base *handlers.BaseHandler
 }
 
-func New(app *authorservice.App) *Handle {
+func New(app *service.App) *Handle {
 	ar := repositoryauthor.New(app.Log)
 
 	return &Handle{
@@ -37,7 +38,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 	ctx := r.Context()
 	h.srv.Log.Info(ctx, "Request made to CreateAuthor", nil)
 
-	record := &model.Author{}
+	record := &author.Author{}
 	if err := json.NewDecoder(r.Body).Decode(record); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.UnableToParseResp())
 
@@ -74,7 +75,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	record := &model.Author{}
+	record := &author.Author{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, err)
@@ -130,7 +131,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	record := &model.Author{}
+	record := &author.Author{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
@@ -172,7 +173,7 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	record := &model.Author{}
+	record := &author.Author{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")

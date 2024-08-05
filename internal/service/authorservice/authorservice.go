@@ -4,38 +4,37 @@ import (
 	"context"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
-
-	"github.com/doublehops/dh-go-framework/internal/model"
-
+	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
 type AuthorService struct {
-	*App
+	*service.App
 	authorRepo *repositoryauthor.Author
 }
 
-func New(app *App, authorRepo *repositoryauthor.Author) *AuthorService {
+func New(app *service.App, authorRepo *repositoryauthor.Author) *AuthorService {
 	return &AuthorService{
 		App:        app,
 		authorRepo: authorRepo,
 	}
 }
 
-func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model.Author, error) {
-	if err := author.SetCreated(ctx); err != nil {
+func (s AuthorService) Create(ctx context.Context, record *author.Author) (*author.Author, error) {
+	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
 
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
-	err := s.authorRepo.Create(ctx, tx, author)
+	err := s.authorRepo.Create(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to save new record. "+err.Error(), nil)
 
-		return author, req.ErrCouldNotSaveRecord
+		return record, req.ErrCouldNotSaveRecord
 	}
 
 	err = tx.Commit()
@@ -43,8 +42,8 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, author.ID, a)
+	a := &author.Author{}
+	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -52,13 +51,13 @@ func (s AuthorService) Create(ctx context.Context, author *model.Author) (*model
 	return a, nil
 }
 
-func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model.Author, error) {
-	author.SetUpdated(ctx)
+func (s AuthorService) Update(ctx context.Context, record *author.Author) (*author.Author, error) {
+	record.SetUpdated(ctx)
 
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
-	err := s.authorRepo.Update(ctx, tx, author)
+	err := s.authorRepo.Update(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update record. "+err.Error(), nil)
 	}
@@ -68,8 +67,8 @@ func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, author.ID, a)
+	a := &author.Author{}
+	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -77,13 +76,13 @@ func (s AuthorService) Update(ctx context.Context, author *model.Author) (*model
 	return a, nil
 }
 
-func (s AuthorService) DeleteByID(ctx context.Context, author *model.Author) error {
+func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) error {
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
-	author.SetDeleted(ctx)
+	record.SetDeleted(ctx)
 
-	err := s.authorRepo.Delete(ctx, tx, author)
+	err := s.authorRepo.Delete(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to delete record. "+err.Error(), nil)
 	}
@@ -96,8 +95,8 @@ func (s AuthorService) DeleteByID(ctx context.Context, author *model.Author) err
 	return nil
 }
 
-func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int32) error {
-	err := s.authorRepo.GetByID(ctx, s.DB, ID, author)
+func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID int32) error {
+	err := s.authorRepo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
 	}
@@ -105,11 +104,11 @@ func (s AuthorService) GetByID(ctx context.Context, author *model.Author, ID int
 	return nil
 }
 
-func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*model.Author, error) {
-	authors, err := s.authorRepo.GetCollection(ctx, s.DB, p)
+func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
+	records, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
 	}
 
-	return authors, nil
+	return records, nil
 }
