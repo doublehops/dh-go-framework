@@ -10,6 +10,11 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
+const (
+	unableToRetrieveRecord    = "unable to retrieve record"
+	unableToCommitTransaction = "unable to commit transaction"
+)
+
 type AuthorService struct {
 	*service.App
 	authorRepo *repositoryauthor.Author
@@ -39,13 +44,13 @@ func (s AuthorService) Create(ctx context.Context, record *author.Author) (*auth
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, unableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	a := &author.Author{}
 	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, unableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return a, nil
@@ -64,13 +69,13 @@ func (s AuthorService) Update(ctx context.Context, record *author.Author) (*auth
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, unableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	a := &author.Author{}
 	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, unableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return a, nil
@@ -89,7 +94,7 @@ func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) er
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, unableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	return nil
@@ -98,7 +103,7 @@ func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) er
 func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID int32) error {
 	err := s.authorRepo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, unableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return nil
