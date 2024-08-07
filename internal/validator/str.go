@@ -1,24 +1,23 @@
 package validator
 
+import "fmt"
+
 const (
-	keyNotInSlice = "value was not found in available items"
+	stringNotInSlice = "value was not found in available items"
 )
 
 // nolint:cyclop
-func In(slice []interface{}, errorMessage string) ValidationFuncs {
+func In(slice []any, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
-			errorMessage = keyNotInSlice
+			errorMessage = stringNotInSlice
 		}
 
 		// We want to convert the slice values into strings.
 		var strSlice []string
-		for _, item := range slice {
-			i, ok := item.(string)
-			if !ok {
-				return false, ProcessingPropertyError
-			}
-			strSlice = append(strSlice, i)
+		for _, i := range slice {
+			item := fmt.Sprintf("%s", i)
+			strSlice = append(strSlice, item)
 		}
 
 		v, ok := value.(string)

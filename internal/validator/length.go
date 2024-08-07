@@ -38,7 +38,7 @@ func MinLength(minLength int, errorMessage string) ValidationFuncs {
 func MaxLength(maxLength int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
-			errorMessage = BetweenLengthDefaultMessage
+			errorMessage = MaxLengthDefaultMessage
 		}
 
 		var v string

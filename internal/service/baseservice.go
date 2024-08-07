@@ -14,6 +14,6 @@ type App struct {
 
 // HasPermission will check whether the authenticated user has authorisation for the requested record. This function
 // can be overwritten in each service.
-func (a *App) HasPermission(ID int32, record model.Model) bool {
-	return ID == record.GetUserID()
+func (a *App) HasPermission(userID int32, record model.Model) bool {
+	return userID == record.GetUserID()
 }
