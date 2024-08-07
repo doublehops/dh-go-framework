@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint:dupl
 func TestMinLength(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -91,6 +92,7 @@ func TestMinLength(t *testing.T) {
 	}
 }
 
+//nolint:dupl
 func TestMaxLength(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -176,6 +178,7 @@ func TestMaxLength(t *testing.T) {
 	}
 }
 
+//nolint:dupl
 func TestLengthInRange(t *testing.T) {
 	tests := []struct {
 		name           string
