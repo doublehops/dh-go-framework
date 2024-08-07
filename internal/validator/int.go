@@ -1,67 +1,101 @@
 package validator
 
-import (
-	"github.com/stretchr/testify/assert"
-	"testing"
+const (
+	MinValueDefaultMessage = "is below required amount"
+	MaxValueDefaultMessage = "is above required amount"
+	InRangeDefaultMessage  = "is not within required range"
+	NotIntegerMessage      = "is not an integer"
 )
 
-func TestEmailAddress(t *testing.T) {
-	tests := []struct {
-		name           string
-		errorMessage   string
-		required       bool
-		value          interface{}
-		expectedErrMsg string
-		expectedResult bool
-	}{
-		{
-			name:           "validEmailAddress",
-			errorMessage:   "",
-			required:       true,
-			value:          "john@example.com",
-			expectedErrMsg: "",
-			expectedResult: true,
-		},
-		{
-			name:           "invalidEmailAddress",
-			errorMessage:   "",
-			required:       true,
-			value:          "john-example.com",
-			expectedErrMsg: EmailAddressDefaultMessage,
-			expectedResult: false,
-		},
-		{
-			name:           "emailAddressEmptyButNotRequired",
-			errorMessage:   "",
-			required:       false,
-			value:          "",
-			expectedErrMsg: "",
-			expectedResult: true,
-		},
-		{
-			name:           "emailAddressEmptyButIsRequired",
-			errorMessage:   "",
-			required:       true,
-			value:          "",
-			expectedErrMsg: RequiredPropertyError,
-			expectedResult: false,
-		},
-		{
-			name:           "emailAddressNotAString",
-			errorMessage:   "",
-			required:       true,
-			value:          nil,
-			expectedErrMsg: ProcessingPropertyError,
-			expectedResult: false,
-		},
-	}
+func MinValue(minValue int, errorMessage string) ValidationFuncs {
+	return func(required bool, value interface{}) (bool, string) {
+		if errorMessage == "" {
+			errorMessage = MinValueDefaultMessage
+		}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := EmailAddress(tt.errorMessage)
-			res, errMsg := f(tt.required, tt.value)
-			assert.Equal(t, tt.expectedErrMsg, errMsg, "error message not as expected")
-			assert.Equal(t, tt.expectedResult, res, "result not as expected")
-		})
+		var (
+			v  int
+			ok bool
+		)
+
+		if v, ok = value.(int); !ok {
+			return false, ProcessingPropertyError
+		}
+
+		if v == 0 && !required {
+			return true, ""
+		}
+
+		if v < minValue {
+			return false, errorMessage
+		}
+
+		return true, ""
+	}
+}
+
+func MaxValue(maxValue int, errorMessage string) ValidationFuncs {
+	return func(required bool, value interface{}) (bool, string) {
+		if errorMessage == "" {
+			errorMessage = MaxValueDefaultMessage
+		}
+
+		var (
+			v  int
+			ok bool
+		)
+
+		if v, ok = value.(int); !ok {
+			return false, ProcessingPropertyError
+		}
+
+		if v > maxValue {
+			return false, errorMessage
+		}
+
+		return true, ""
+	}
+}
+
+func IsInt(errorMessage string) ValidationFuncs {
+	return func(required bool, value interface{}) (bool, string) {
+		if errorMessage == "" {
+			errorMessage = NotIntegerMessage
+		}
+
+		var ok bool
+
+		if _, ok = value.(int); !ok {
+			return false, errorMessage
+		}
+
+		return true, ""
+	}
+}
+
+func IntInRange(minValue, maxValue int, errorMessage string) ValidationFuncs {
+	return func(required bool, value interface{}) (bool, string) {
+		if errorMessage == "" {
+			errorMessage = InRangeDefaultMessage
+		}
+
+		var (
+			v  int
+			ok bool
+		)
+
+		if v, ok = value.(int); !ok {
+			return false, ProcessingPropertyError
+		}
+
+		if v == 0 && !required {
+			return true, ""
+		}
+
+		if v < minValue || v > maxValue {
+			return false, errorMessage
+		}
+
+		return true, ""
 	}
 }
