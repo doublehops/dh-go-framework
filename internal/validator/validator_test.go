@@ -1,9 +1,10 @@
 package validator
 
 import (
+	"testing"
+
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRunValidation(t *testing.T) {

@@ -1,8 +1,9 @@
 package tools
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestCurrentFunction will test `currentFunction`. Because of the way tests are ran, it won't actually return the
