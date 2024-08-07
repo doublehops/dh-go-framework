@@ -18,6 +18,10 @@ func MinValue(minValue int, errorMessage string) ValidationFuncs {
 			ok bool
 		)
 
+		if value == "" && !required {
+			return true, ""
+		}
+
 		if v, ok = value.(int); !ok {
 			return false, ProcessingPropertyError
 		}
