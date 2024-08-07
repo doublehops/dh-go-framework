@@ -7,8 +7,6 @@ import (
 )
 
 func TestRunValidation(t *testing.T) {
-	type fruit string
-
 	tests := []struct {
 		name               string
 		rules              []Rule

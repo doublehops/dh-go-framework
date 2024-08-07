@@ -30,7 +30,7 @@ func TestRead(t *testing.T) {
 		},
 		{
 			name:               "testFailToWriteAndRead",
-			filename:           fmt.Sprintf("/no-permission-here"),
+			filename:           "/no-permission-here",
 			writeString:        []byte("This is the test string"),
 			expectedWriteError: fmt.Errorf("unable to write temp file: /no-permission-here. open /no-permission-here: permission denied"),
 			expectedReadError:  fmt.Errorf("unable to read file: /no-permission-here. open /no-permission-here: no such file or directory"),

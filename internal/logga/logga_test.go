@@ -231,14 +231,6 @@ func setContextItem(ctx context.Context, key app.ContextVar, value any) context.
 	return context.WithValue(ctx, key, value)
 }
 
-func getContextItem(ctx context.Context, key app.ContextVar) any {
-	if value := ctx.Value(key); value != nil {
-		return value
-	}
-
-	return ""
-}
-
 func fileExists() bool {
 	_, err := os.Stat(testbuffer.Filename)
 	if os.IsNotExist(err) {
