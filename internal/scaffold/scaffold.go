@@ -124,7 +124,8 @@ func (s *Scaffold) Run() error {
 		ServiceFilename:    "service" + RemoveUnderscores(s.tableName) + ".go",
 		RepositoryFilename: "repository" + RemoveUnderscores(s.tableName) + ".go",
 
-		ServiceName: ToPascalCase(s.tableName) + "Service",
+		ServiceName:    ToPascalCase(s.tableName) + "Service",
+		RepositoryName: ToPascalCase(s.tableName) + "Repository",
 
 		Columns: getColumnDefinitions(columns),
 	}

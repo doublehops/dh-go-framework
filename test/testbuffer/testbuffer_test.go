@@ -21,7 +21,7 @@ func TestRead(t *testing.T) {
 	}{
 		{
 			name:               "testSuccess",
-			filename:           fmt.Sprintf("/tmp/testbuffer-%d", rand.Int()),
+			filename:           fmt.Sprintf("/tmp/testbuffer-%d", rand.Int()), //nolint:gosec
 			writeString:        []byte("This is the test string"),
 			expectedWriteError: nil,
 			expectedReadError:  nil,
