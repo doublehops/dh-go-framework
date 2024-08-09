@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // Importing the MySQL driver for database/sql.
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/config"

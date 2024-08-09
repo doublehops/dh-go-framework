@@ -6,6 +6,10 @@ run:
 gofmt:
 	gofumpt -l -w .
 
+# `test` is a reserved keyword in makefiles.
+tst:
+	go test ./... -cover
+
 # To fix permissions issue, run: sudo chown -R $(whoami) .db-data/
 lint:
 	golangci-lint --config ./ci/.golangci-lint.yml run

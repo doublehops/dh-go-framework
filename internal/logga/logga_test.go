@@ -1,6 +1,7 @@
 package logga
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -9,9 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/test/testbuffer"
-	"github.com/gin-gonic/gin"
 )
 
 func TestNew(t *testing.T) {
@@ -125,7 +126,7 @@ func TestSendLogMessage(t *testing.T) {
 	tests := []struct {
 		name           string
 		config         *config.Logging
-		ctxArgs        map[string]interface{}
+		ctxArgs        map[interface{}]interface{}
 		customArgs     KVPs
 		expectedOutput logOutput
 	}{
@@ -136,7 +137,8 @@ func TestSendLogMessage(t *testing.T) {
 				OutputFormat: "json",
 				LogLevel:     "DEBUG",
 			},
-			ctxArgs: map[string]interface{}{},
+			ctxArgs:    map[interface{}]interface{}{},
+			customArgs: KVPs{},
 			expectedOutput: logOutput{
 				Level: "INFO",
 				Msg:   basicMessage,
@@ -149,15 +151,16 @@ func TestSendLogMessage(t *testing.T) {
 				OutputFormat: "json",
 				LogLevel:     "DEBUG",
 			},
-			ctxArgs: map[string]interface{}{
-				"traceID": "ABCD-1234",
-				"userID":  2134,
+			ctxArgs: map[interface{}]interface{}{
+				app.TraceIDKey: "trace-99876",
+				app.UserIDKey:  123,
 			},
+			customArgs: KVPs{},
 			expectedOutput: logOutput{
 				Level:   "INFO",
 				Msg:     basicMessage,
-				TraceID: "ABCD-1234",
-				UserID:  2134,
+				TraceID: "trace-99876",
+				UserID:  123,
 			},
 		},
 		{
@@ -188,14 +191,14 @@ func TestSendLogMessage(t *testing.T) {
 			}
 			defer os.Remove(testbuffer.Filename)
 
-			ctx := &gin.Context{}
+			ctx := context.Background()
 
 			for key, value := range tt.ctxArgs {
 				switch key {
-				case "traceID":
-					ctx.Set("traceID", value)
-				case "userID":
-					ctx.Set("userID", value)
+				case app.TraceIDKey:
+					ctx = setContextItem(ctx, app.TraceIDKey, value)
+				case app.UserIDKey:
+					ctx = setContextItem(ctx, app.UserIDKey, value)
 				}
 			}
 
@@ -218,10 +221,14 @@ func TestSendLogMessage(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(tt.expectedOutput, output) {
-				t.Errorf("level not as expected. Expected: %v; got: %v", tt.expectedOutput, output)
+				t.Errorf("log message not as expected. Expected: %v; got: %v", tt.expectedOutput, output)
 			}
 		})
 	}
+}
+
+func setContextItem(ctx context.Context, key app.ContextVar, value any) context.Context {
+	return context.WithValue(ctx, key, value)
 }
 
 func fileExists() bool {

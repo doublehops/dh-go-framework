@@ -1,13 +1,13 @@
-package model
+package author
 
 import (
-	"github.com/doublehops/dh-go-framework/internal/validator"
-
+	"github.com/doublehops/dh-go-framework/internal/model"
 	req "github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/validator"
 )
 
 type Author struct {
-	BaseModel
+	model.BaseModel
 	Name string `json:"name" db:"name"`
 }
 
