@@ -11,13 +11,8 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
-
-	migrate "github.com/doublehops/go-migration"
+	migrate "github.com/doublehops/dh-go-framework/internal/migration"
 )
-
-/*
-  This file just serves as an example of how you would add this library to your project.
-*/
 
 func main() {
 	if err := run(); err != nil {

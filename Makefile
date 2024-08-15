@@ -27,3 +27,10 @@ docker_down:
 # make scaffold model=<table_name>
 scaffold:
 	go run ./cmd/scaffold/run.go -config ./config.json -table $(table)
+
+migrate:
+	go run ./cmd/migrate/migrate.go -action up
+
+# Run migrations for test database.
+migrate_test:
+	go run ./cmd/migrate/migrate.go -action up -config config_test.json
