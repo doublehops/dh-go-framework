@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/doublehops/dh-go-framework/internal/config"
 	"io"
 	"net/http"
 
@@ -12,19 +13,31 @@ import (
 )
 
 type Requester struct {
-	Log              *logga.Logga
-	aggregatorConfig *aggregatorConfig
+	Log  *logga.Logga
+	Host string
 }
 
-type aggregatorConfig struct {
-	Name       string     `json:"name"`
-	Label      string     `json:"label"`
-	HostConfig HostConfig `json:"hostConfig"`
-}
+const (
+	testHost = "http://localhost:8088/"
+)
 
-type HostConfig struct {
-	ApiKey  string `json:"apiKey"`
-	ApiHost string `json:"apiHost"`
+func GetRequester() (Requester, error) {
+	logg := &config.Logging{
+		Writer:       "stdout",
+		LogLevel:     "DEBUG",
+		OutputFormat: "JSON",
+	}
+	l, err := logga.New(logg)
+	if err != nil {
+		return Requester{}, err
+	}
+
+	req := Requester{
+		Log:  l,
+		Host: testHost,
+	}
+
+	return req, nil
 }
 
 func (r *Requester) MakeRequest(ctx context.Context, method, path string, params map[string]string, payload any) (string, []byte, error) {
@@ -45,7 +58,7 @@ func (r *Requester) MakeRequest(ctx context.Context, method, path string, params
 		p = bytes.NewReader(pLoad)
 	}
 
-	req, err := http.NewRequest(method, r.aggregatorConfig.HostConfig.ApiHost+path, p)
+	req, err := http.NewRequest(method, r.Host+path, p)
 	if err != nil {
 		r.Log.Error(ctx, "There was an error instantiating a request", nil)
 		r.Log.Error(ctx, err.Error(), nil)

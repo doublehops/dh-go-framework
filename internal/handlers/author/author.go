@@ -59,7 +59,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(a))
+	h.base.WriteJSON(ctx, w, http.StatusCreated, req.GetSingleItemResp(a))
 }
 
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

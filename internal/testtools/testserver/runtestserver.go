@@ -1,27 +1,26 @@
-package test_tools
+package testserver
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/routes"
-	"github.com/doublehops/dh-go-framework/internal/runflags"
 	"github.com/doublehops/dh-go-framework/internal/service"
-	"github.com/julienschmidt/httprouter"
-	"log"
-	"net/http"
-	"time"
 )
 
 func RunTestServer() error {
 	ctx := context.Background()
 
-	flags := runflags.GetFlags()
-
 	// Setup config.
-	cfg, err := config.New(flags.ConfigFile)
+	cfg, err := config.New("./config_test.json")
 	if err != nil {
 		return fmt.Errorf("error starting main. %s", err.Error())
 	}

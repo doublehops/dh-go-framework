@@ -1,23 +1,38 @@
 package author
 
 import (
-	"github.com/doublehops/dh-go-framework/internal/config"
-	"github.com/doublehops/dh-go-framework/internal/httprequest"
-	"github.com/doublehops/dh-go-framework/internal/logga"
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/doublehops/dh-go-framework/internal/httprequest"
+	"github.com/doublehops/dh-go-framework/internal/model/author"
+	"github.com/doublehops/dh-go-framework/internal/request"
 )
 
-func TestMain(m *testing.M) {
+func TestAuthorCRUD(t *testing.T) {
+	req, _ := httprequest.GetRequester()
+	ctx := context.TODO()
 
-}
-
-func TestCRUD(t *testing.T) {
-	logg := &config.Logging{
-		Writer:       "",
-		LogLevel:     "debug",
-		OutputFormat: "JSON",
+	payload := author.Author{
+		Name: "author1",
 	}
-	l, err := logga.New(logg)
 
-	req := httprequest.Requester{}
+	statusCode, res, err := req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusCreated))
+
+	record := request.SingleItemResp{
+		Data: &author.Author{},
+	}
+	err = json.Unmarshal(res, &record)
+	assert.NoError(t, err, "unable to unmaarshal record")
+	d := record.Data.(*author.Author)
+
+	assert.NoError(t, err, "error unmarshalling record")
+	assert.Equal(t, payload.Name, d.Name)
 }

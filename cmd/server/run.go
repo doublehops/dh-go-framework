@@ -64,10 +64,10 @@ func run() error {
 
 	mux := http.TimeoutHandler(router, time.Second*1, "Timeout!")
 
-	l.Info(ctx, "Starting server on port :8080", nil)
+	l.Info(ctx, "Starting server on port :8088", nil)
 
 	// todo - This really needs to be replaced with something that allows timeouts.
-	err = http.ListenAndServe(":8080", mux) // nolint:gosec // @todo - remove this exception.
+	err = http.ListenAndServe(":8088", mux) // nolint:gosec // @todo - remove this exception.
 	if err != nil {
 		return fmt.Errorf("unable to start server. %s", err.Error())
 	}
