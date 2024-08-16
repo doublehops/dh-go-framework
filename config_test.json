@@ -1,4 +1,7 @@
 {
+  "host": {
+    "port": "8089"
+  },
   "logging": {
     "writer": "stdout",
     "logLevel": "DEBUG",
@@ -6,6 +9,7 @@
   },
   "database": {
     "host": "127.0.0.1",
+    "port": "8089",
     "name": "dhapi_test",
     "user": "dev",
     "password": "pass12"

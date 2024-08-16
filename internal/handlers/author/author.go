@@ -101,6 +101,8 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
+	record.ID = int32(i) // Ensure that ID is not accepted in request.
+
 	if errors := record.Validate(); len(errors) > 0 {
 		errs := req.GetValidateErrResp(errors, req.ErrValidation.Error())
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, errs)

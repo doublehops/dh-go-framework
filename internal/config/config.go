@@ -8,8 +8,13 @@ import (
 )
 
 type Config struct {
+	Host    Host    `json:"host"`
 	Logging Logging `json:"logging"`
 	DB      DB      `json:"database"`
+}
+
+type Host struct {
+	Port string `json:"port"`
 }
 
 type Aggregator struct {

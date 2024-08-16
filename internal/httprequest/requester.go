@@ -18,7 +18,7 @@ type Requester struct {
 }
 
 const (
-	testHost = "http://localhost:8088/"
+	testHost = "http://localhost:8089/"
 )
 
 func GetRequester() (Requester, error) {

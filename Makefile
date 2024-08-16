@@ -3,6 +3,9 @@
 run:
 	go run cmd/server/run.go -config ./config.json
 
+run_for_test:
+	go run cmd/server/run.go -config ./config_test.json
+
 gofmt:
 	gofumpt -l -w .
 
