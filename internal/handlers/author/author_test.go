@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/doublehops/dh-go-framework/internal/testtools"
 	"net/http"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/httprequest"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/testtools"
 )
 
 func TestAuthorCRUD(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAuthorCRUD(t *testing.T) {
 		Name: "author1",
 	}
 
-	// Test create new record.
+	// Test CREATE new record.
 	statusCode, res, err := req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusCreated))
@@ -42,7 +42,7 @@ func TestAuthorCRUD(t *testing.T) {
 	assert.WithinDuration(t, expectedTime, *d.CreatedAt, duration)
 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
 
-	// Test get new record.
+	// Test GET new record.
 	path := fmt.Sprintf("v1/author/%d", d.ID)
 	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
@@ -58,7 +58,7 @@ func TestAuthorCRUD(t *testing.T) {
 	expectedTime, duration = testtools.GetTolerance(5)
 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
 
-	// Test update new record.
+	// Test UPDATE new record.
 	payload = author.Author{
 		Name: "authorABC",
 	}
@@ -78,7 +78,7 @@ func TestAuthorCRUD(t *testing.T) {
 	expectedTime, duration = testtools.GetTolerance(5)
 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
 
-	// Test delete new record.
+	// Test DELETE new record.
 	path = fmt.Sprintf("v1/author/%d", d.ID)
 	statusCode, res, err = req.MakeRequest(ctx, http.MethodDelete, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
@@ -89,5 +89,4 @@ func TestAuthorCRUD(t *testing.T) {
 	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusNotFound))
-
 }
