@@ -35,12 +35,12 @@ jobs:
         with:
           go-version: 1.21
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until docker exec -it $(docker ps -qf "ancestor=mysql:8.0") mysqladmin ping --silent; do
-            echo "Waiting for MySQL..."
-            sleep 5
-          done
+#      - name: Wait for MySQL to be ready
+#        run: |
+#          until docker exec -it $(docker ps -qf "ancestor=mysql:8.0") mysqladmin ping --silent; do
+#            echo "Waiting for MySQL..."
+#            sleep 5
+#          done
 
       - name: Run database migrations
         run: go run cmd/migrate/migrate.go -action up
