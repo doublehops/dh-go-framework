@@ -1,8 +1,8 @@
-package go_migration
+package gomigration
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/doublehops/go-migration/helpers"
@@ -20,8 +20,7 @@ func (a *Action) CreateMigration(path string) error {
 
 	separatorMessage := fmt.Sprintf("-- You need to separate multiple queries with this dotted line: %s\n\n", QuerySeparator)
 
-	exampleUp :=
-`CREATE TABLE news (
+	exampleUp := `CREATE TABLE news (
     id INT(11) NOT NULL,
     currency_id INT(11) NOT NULL,
     created_at DATETIME,
@@ -32,14 +31,14 @@ func (a *Action) CreateMigration(path string) error {
 	`
 
 	exampleUp = separatorMessage + exampleUp
-	exampleDown := separatorMessage +"DROP TABLE news;\n\n"
+	exampleDown := separatorMessage + "DROP TABLE news;\n\n"
 
-	err := ioutil.WriteFile(upPath, []byte(exampleUp), 0644)
+	err := os.WriteFile(upPath, []byte(exampleUp), 0o644)
 	if err != nil {
 		return fmt.Errorf("unable to write template file: %s. %s", upPath, err)
 	}
 
-	err = ioutil.WriteFile(downPath, []byte(exampleDown), 0644)
+	err = os.WriteFile(downPath, []byte(exampleDown), 0o644)
 	if err != nil {
 		return fmt.Errorf("unable to write template file: %s. %s", downPath, err)
 	}

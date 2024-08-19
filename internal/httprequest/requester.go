@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/doublehops/dh-go-framework/internal/config"
 	"io"
 	"net/http"
+
+	"github.com/doublehops/dh-go-framework/internal/config"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
@@ -41,7 +42,6 @@ func GetRequester() (Requester, error) {
 }
 
 func (r *Requester) MakeRequest(ctx context.Context, method, path string, params map[string]string, payload any) (string, []byte, error) {
-
 	client := &http.Client{}
 	var p io.Reader
 

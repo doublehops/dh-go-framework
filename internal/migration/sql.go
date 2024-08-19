@@ -1,4 +1,4 @@
-package go_migration
+package gomigration
 
 const QuerySeparator = "------------------"
 

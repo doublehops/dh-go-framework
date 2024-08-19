@@ -1,4 +1,4 @@
-package go_migration
+package gomigration
 
 import (
 	"database/sql"
@@ -6,14 +6,13 @@ import (
 )
 
 type MigrationRecord struct {
-	ID int
-	Filename string
+	ID        int
+	Filename  string
 	CreatedAt string
 }
 
 // getLatestRanMigration will find the last processed migration.
 func (a *Action) getLatestRanMigration() (string, error) {
-
 	var record MigrationRecord
 	rows, err := a.DB.Query(GetLatestMigrationSQL)
 	if err != nil {
@@ -21,7 +20,10 @@ func (a *Action) getLatestRanMigration() (string, error) {
 			return "", nil
 		}
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+		_ = rows.Err()
+	}()
 	if rows == nil {
 		return "", nil
 	}
@@ -37,7 +39,6 @@ func (a *Action) getLatestRanMigration() (string, error) {
 
 // addMigrationTable will add a `migration` table to the database to track what has been
 func (a *Action) addMigrationTable() error {
-
 	_, err := a.DB.Exec(CreateMigrationsTable)
 	if err != nil {
 		return fmt.Errorf("error creating migrations table. %s", err)

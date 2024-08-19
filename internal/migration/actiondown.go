@@ -1,4 +1,4 @@
-package go_migration
+package gomigration
 
 import (
 	"fmt"
@@ -24,7 +24,6 @@ func (a *Action) MigrateDown(migrationFiles []File) error {
 // processFileDown will process the down queries in the given file. It will attempt to rollback when there is
 // and error in one of the queries.
 func (a *Action) processFileDown(file File) error {
-
 	tx, err := a.DB.Begin()
 	if err != nil {
 		return fmt.Errorf("error starting transaction. %w", err)

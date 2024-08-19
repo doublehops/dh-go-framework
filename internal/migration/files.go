@@ -1,8 +1,7 @@
-package go_migration
+package gomigration
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -10,11 +9,10 @@ import (
 
 // listMigrationFiles will get migration files from the configured path.
 func (a *Action) listMigrationFiles() ([]string, error) {
-
-	fileFilter := "."+ a.Action +".sql"
+	fileFilter := "." + a.Action + ".sql"
 
 	var files []string
-	f, err := ioutil.ReadDir(a.Path)
+	f, err := os.ReadDir(a.Path)
 	if err != nil {
 		return files, fmt.Errorf("unable to list migration files. %w", err)
 	}
@@ -31,7 +29,7 @@ func (a *Action) listMigrationFiles() ([]string, error) {
 // getPendingMigrationFiles will loop through all migration files and return the ones that haven't been run yet.
 func (a *Action) getPendingMigrationFiles() ([]string, error) {
 	var pendingFiles []string
-	var foundLastRan = false
+	foundLastRan := false
 
 	lastRanMigration, err := a.getLatestRanMigration()
 	if err != nil {
@@ -46,7 +44,7 @@ func (a *Action) getPendingMigrationFiles() ([]string, error) {
 		foundLastRan = true // If no migrations have previously ran, set found as true to start from first file.
 	}
 
-	var i = 0
+	i := 0
 	for _, file := range allFiles {
 		if i == a.Number {
 			break
@@ -69,7 +67,7 @@ func (a *Action) getPendingMigrationFiles() ([]string, error) {
 // getPreviouslyMigratedFiles will loop through all migration files and return the ones that have already been run.
 func (a *Action) getMigrationFilesToRollBack() ([]string, error) {
 	var migrationsToRollBack []string
-	var foundLastRan = false
+	foundLastRan := false
 
 	lastRanMigration, err := a.getLatestRanMigration()
 	if err != nil {
@@ -88,7 +86,7 @@ func (a *Action) getMigrationFilesToRollBack() ([]string, error) {
 
 	lastRanMigrationShortName := TrimExtension(lastRanMigration)
 
-	var i = 0
+	i := 0
 	for _, file := range allFiles {
 		shortFileName := TrimExtension(file)
 		if i == a.Number {
@@ -98,6 +96,7 @@ func (a *Action) getMigrationFilesToRollBack() ([]string, error) {
 			foundLastRan = true
 			migrationsToRollBack = append(migrationsToRollBack, file)
 			i++
+
 			continue
 		}
 		if !foundLastRan {
@@ -117,7 +116,7 @@ func (a *Action) parseMigrations(filesToParse []string) ([]File, error) {
 	for _, file := range filesToParse {
 
 		thisFile := File{Filename: file}
-		data, err := os.ReadFile(a.Path+"/"+file)
+		data, err := os.ReadFile(a.Path + "/" + file)
 		if err != nil {
 			return files, fmt.Errorf("unable to read file: %s. %s", file, err)
 		}

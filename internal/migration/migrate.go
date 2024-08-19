@@ -1,11 +1,11 @@
-package go_migration
+package gomigration
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // nolint:revive
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/migration/helpers"
@@ -40,6 +40,7 @@ type Table struct {
 	Name string
 }
 
+// nolint:cyclop
 func (a *Action) Migrate() error {
 	var err error
 
@@ -95,7 +96,6 @@ func (a *Action) Migrate() error {
 }
 
 func (a *Action) IsValidAction(key string) bool {
-
 	validActions := []string{
 		"create",
 		"up",
@@ -112,7 +112,7 @@ func (a *Action) IsValidAction(key string) bool {
 }
 
 func (a *Action) PrintHelp() {
-	var helpMsg = `
+	helpMsg := `
 Usage: <your_script> -action=<action> -number=<number>
 Examples: 
 ./main.go -action create -name add_user_table // Will create a new migration file with template.
@@ -127,6 +127,10 @@ Examples:
 func (a *Action) ensureMigrationsTableExists() error {
 	var tableList TableList
 	rows, err := a.DB.Query(CheckMigrationsTableExistsSQL)
+	defer func() {
+		_ = rows.Close()
+		_ = rows.Err()
+	}()
 	if err != nil {
 		return fmt.Errorf("++++>>>> Error: %w", err)
 	}

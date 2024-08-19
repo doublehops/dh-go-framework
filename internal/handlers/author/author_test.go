@@ -15,7 +15,9 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/testtools"
 )
 
+//nolint:funlen
 func TestAuthorCRUD(t *testing.T) {
+	var ok bool
 	req, _ := httprequest.GetRequester()
 	ctx := context.TODO()
 
@@ -50,7 +52,9 @@ func TestAuthorCRUD(t *testing.T) {
 
 	err = json.Unmarshal(res, &record)
 	assert.NoError(t, err, "unable to unmarshal record")
-	d = record.Data.(*author.Author)
+	if d, ok = record.Data.(*author.Author); !ok {
+		t.Error("unable to convert response")
+	}
 
 	assert.NoError(t, err, "error unmarshalling record")
 	assert.Equal(t, payload.Name, d.Name)
@@ -70,7 +74,9 @@ func TestAuthorCRUD(t *testing.T) {
 
 	err = json.Unmarshal(res, &record)
 	assert.NoError(t, err, "unable to unmarshal record")
-	d = record.Data.(*author.Author)
+	if d, ok = record.Data.(*author.Author); !ok {
+		t.Error("unable to convert response")
+	}
 
 	assert.NoError(t, err, "error unmarshalling record")
 	assert.Equal(t, payload.Name, d.Name)

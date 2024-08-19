@@ -1,7 +1,8 @@
-package go_migration
+package gomigration
 
 import (
 	"fmt"
+
 	"github.com/doublehops/go-migration/helpers"
 )
 
@@ -22,7 +23,6 @@ func (a *Action) MigrateUp(migrationFiles []File) error {
 // processFile will process the queries in the given file. It will attempt to rollback when there is
 // and error in one of the queries.
 func (a *Action) processFileUp(file File) error {
-
 	tx, err := a.DB.Begin()
 	if err != nil {
 		return fmt.Errorf("error starting transaction. %w", err)
