@@ -1,4 +1,4 @@
-name: CI
+name: run-tests
 
 on:
   push:
@@ -22,11 +22,9 @@ jobs:
           MYSQL_PASSWORD: pass12
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+#        volumes:
+#          - ./docker/provision/mysql/init:/docker-entrypoint-initdb.d
 
     steps:
       - name: Checkout code
@@ -53,7 +51,7 @@ jobs:
           docker run -d -e DB_HOST=127.0.0.1 -e DB_USER=dev -e DB_PASSWORD=pass12 -e DB_NAME=dhapi_test --network host my-go-app
 
       - name: Run Go tests
-        run: go test ./...
+        run: go test ./... --config config_test.json
 
       - name: Stop Docker containers
         run: docker stop $(docker ps -q)
