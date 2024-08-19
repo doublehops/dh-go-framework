@@ -18,6 +18,7 @@ import (
 //nolint:funlen
 func TestAuthorCRUD(t *testing.T) {
 	var ok bool
+	var d *author.Author
 	req, _ := httprequest.GetRequester()
 	ctx := context.TODO()
 
@@ -35,7 +36,9 @@ func TestAuthorCRUD(t *testing.T) {
 	}
 	err = json.Unmarshal(res, &record)
 	assert.NoError(t, err, "unable to unmarshal record")
-	d := record.Data.(*author.Author)
+	if d, ok = record.Data.(*author.Author); !ok {
+		t.Error("unable to convert response")
+	}
 
 	assert.NoError(t, err, "error unmarshalling record")
 	assert.Equal(t, payload.Name, d.Name)
@@ -86,13 +89,13 @@ func TestAuthorCRUD(t *testing.T) {
 
 	// Test DELETE new record.
 	path = fmt.Sprintf("v1/author/%d", d.ID)
-	statusCode, res, err = req.MakeRequest(ctx, http.MethodDelete, path, nil, nil)
+	statusCode, _, err = req.MakeRequest(ctx, http.MethodDelete, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusNoContent))
 
 	// Test that record has been deleted.
 	path = fmt.Sprintf("v1/author/%d", d.ID)
-	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
+	statusCode, _, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusNotFound))
 }

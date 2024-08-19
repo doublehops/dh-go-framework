@@ -83,6 +83,7 @@ func (r *Requester) MakeRequest(ctx context.Context, method, path string, params
 
 		return "", nil, errMsg
 	}
+	defer resp.Body.Close()
 
 	statusCode := resp.Status
 	respBody, _ := io.ReadAll(resp.Body)

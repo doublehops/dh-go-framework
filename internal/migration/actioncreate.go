@@ -33,12 +33,12 @@ func (a *Action) CreateMigration(path string) error {
 	exampleUp = separatorMessage + exampleUp
 	exampleDown := separatorMessage + "DROP TABLE news;\n\n"
 
-	err := os.WriteFile(upPath, []byte(exampleUp), 0o644)
+	err := os.WriteFile(upPath, []byte(exampleUp), 0o644) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("unable to write template file: %s. %s", upPath, err)
 	}
 
-	err = os.WriteFile(downPath, []byte(exampleDown), 0o644)
+	err = os.WriteFile(downPath, []byte(exampleDown), 0o644) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("unable to write template file: %s. %s", downPath, err)
 	}

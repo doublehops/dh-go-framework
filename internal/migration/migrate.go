@@ -68,7 +68,7 @@ func (a *Action) Migrate() error {
 			return err
 		}
 
-		if err = a.MigrateUp(migrationFiles); err != nil {
+		if err := a.MigrateUp(migrationFiles); err != nil {
 			return err
 		}
 	}
@@ -87,7 +87,7 @@ func (a *Action) Migrate() error {
 			return err
 		}
 
-		if err = a.MigrateDown(migrationFiles); err != nil {
+		if err := a.MigrateDown(migrationFiles); err != nil {
 			return err
 		}
 	}
@@ -137,7 +137,7 @@ func (a *Action) ensureMigrationsTableExists() error {
 
 	for rows.Next() {
 		var t Table
-		if err = rows.Scan(&t.Name); err != nil {
+		if err := rows.Scan(&t.Name); err != nil {
 			return err
 		}
 		tableList = append(tableList, t)

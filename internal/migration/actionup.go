@@ -39,7 +39,7 @@ func (a *Action) processFileUp(file File) error {
 
 	_, err = tx.Exec(InsertMigrationRecordIntoTableSQL, file.Filename)
 	if err != nil {
-		return fmt.Errorf("unable to update migration table with newly ran migration record. %w\n", err)
+		return fmt.Errorf("unable to update migration table with newly ran migration record. %w", err)
 	}
 	helpers.PrintMsg(" - Success\n")
 
