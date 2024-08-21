@@ -51,7 +51,7 @@ jobs:
 
       - name: Build and start Go application
         run: |
-          docker build -t my-go-app -f docker/Dockerfie .
+          docker build -t my-go-app -f docker/Dockerfile .
           docker run -d my-go-app
 #          docker run -d \
 #            -e DB_HOST=${{ secrets.DB_HOST }} \
