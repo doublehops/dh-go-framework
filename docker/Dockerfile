@@ -11,7 +11,7 @@ RUN go mod download
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server/run.go
 
-EXPOSE 8088
+EXPOSE 8089
 
 # Run
 CMD ["./main"]
