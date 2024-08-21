@@ -47,7 +47,7 @@ jobs:
         run: printenv | sort
 
       - name: Run database migrations
-        run: go run cmd/migrate/migrate.go -action up -config config.json
+        run: go run cmd/migrate/migrate.go -action up -config config_test.json
 
       - name: Build and start Go application
         run: |
