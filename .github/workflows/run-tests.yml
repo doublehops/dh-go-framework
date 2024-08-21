@@ -11,6 +11,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: dev
 
     services:
       mysql:
@@ -48,7 +49,12 @@ jobs:
       - name: Build and start Go application
         run: |
           docker build -t my-go-app .
-          docker run -d -e DB_HOST=127.0.0.1 -e DB_USER=dev -e DB_PASSWORD=pass12 -e DB_NAME=dhapi_test --network host my-go-app
+          docker run -d \
+            -e DB_HOST=${{ secrets.DB_HOST }} \
+            -e DB_USER=${{ secrets.DB_USER }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_NAME=${{ secrets.DB_NAME }} \ 
+          my-go-app
 
       - name: Run Go tests
         run: go test ./... --config config_test.json

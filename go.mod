@@ -1,6 +1,6 @@
 module github.com/doublehops/dh-go-framework
 
-go 1.21.0
+go 1.21
 
 // @todo - this should be removed when dhapi is pushed to Github.
 replace github.com/doublehops/dhapi => /home/b/workspace/dhapi-2

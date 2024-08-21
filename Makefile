@@ -37,3 +37,11 @@ migrate:
 # Run migrations for test database.
 migrate_test:
 	go run ./cmd/migrate/migrate.go -action up -config config_test.json
+
+
+## Container stuff ##
+build_container:
+	docker rm dhapi-container; docker run -it --name dhapi-container dhapi /bin/bash
+
+conn_container:
+	docker run -it --name dhapi-container dhapi /bin/bash
