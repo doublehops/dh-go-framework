@@ -43,18 +43,22 @@ jobs:
 #            sleep 5
 #          done
 
+      - name: Debug environment variables
+        run: printenv | sort
+
       - name: Run database migrations
         run: go run cmd/migrate/migrate.go -action up -config config_test.json
 
       - name: Build and start Go application
         run: |
-          docker build -t my-go-app .
-          docker run -d \
-            -e DB_HOST=${{ secrets.DB_HOST }} \
-            -e DB_USER=${{ secrets.DB_USER }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e DB_NAME=${{ secrets.DB_NAME }} \ 
-          my-go-app
+          docker build -t my-go-app -f docker/Dockerfie .
+          docker run -d my-go-app
+#          docker run -d \
+#            -e DB_HOST=${{ secrets.DB_HOST }} \
+#            -e DB_USER=${{ secrets.DB_USER }} \
+#            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+#            -e DB_NAME=${{ secrets.DB_NAME }} \
+#            my-go-app
 
       - name: Run Go tests
         run: go test ./... --config config_test.json
