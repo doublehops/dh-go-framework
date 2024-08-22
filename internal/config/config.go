@@ -14,7 +14,8 @@ type Config struct {
 }
 
 type Host struct {
-	Port string `json:"port"`
+	Port    string `json:"port"`
+	TestURL string `json:"testUrl"`
 }
 
 type Aggregator struct {

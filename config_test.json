@@ -1,6 +1,7 @@
 {
   "host": {
-    "port": "8088"
+    "port": "8089",
+    "testUrl": "http://app:8089"
   },
   "logging": {
     "writer": "stdout",

@@ -1,4 +1,19 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TEST_URL: "http://app:8089"
+    networks:
+      - mynetwork
+
   db:
     image: "mariadb:10.5"
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -14,23 +29,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 #    entrypoint: "mysql -u dev -ppass12 -h 127.0.0.1 dhapi < db/migrations/000001_init_schema.up.sql"
     networks:
-      - net1
-#  web:
-#    build: .
-#    image: "golang:1.6.1-alpine"
-##    volumes:
-##      - .:/var/www
-##    command: ["go", "run", "./cmd/server/main.go"]
-#    entrypoint: "go run cmd/server/main.go"
-#    ports:
-#      - "8088:8080"
-#    depends_on:
-#      - db
-#    networks:
-#      - net1
+      - mynetwork
+
 volumes:
   db-data:
 
 networks:
-  net1:
+  mynetwork:
     driver: bridge

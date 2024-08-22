@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/doublehops/dh-go-framework/internal/config"
+	"log"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,11 +18,25 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/testtools"
 )
 
+var cfg *config.Config
+
+func TestMain(m *testing.M) {
+	var err error
+
+	cfg, err = config.New("./config_test.json")
+	if err != nil {
+		log.Printf("error starting main. %s", err.Error())
+		os.Exit(1)
+	}
+	code := m.Run()
+	os.Exit(code)
+}
+
 //nolint:funlen
 func TestAuthorCRUD(t *testing.T) {
 	var ok bool
 	var d *author.Author
-	req, _ := httprequest.GetRequester()
+	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
 	ctx := context.TODO()
 
 	payload := author.Author{
