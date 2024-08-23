@@ -9,7 +9,7 @@
     "outputFormat": "text"
   },
   "database": {
-    "host": "127.0.0.1",
+    "host": "db",
     "port": "8089",
     "name": "dhapi_test",
     "user": "dev",

@@ -42,6 +42,9 @@ func run() error {
 		return fmt.Errorf("error configuring logger. %s", err.Error())
 	}
 
+	lMsg := fmt.Sprintf("MySQL config found. %s", cfg.DB.Host)
+	l.Info(ctx, lMsg, nil)
+
 	// Setup db connection.
 	DB, err := db.New(l, cfg.DB)
 	if err != nil {
