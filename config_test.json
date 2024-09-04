@@ -9,8 +9,8 @@
     "outputFormat": "text"
   },
   "database": {
-    "host": "db",
-    "port": "8089",
+    "host": "mysql",
+    "port": "3306",
     "name": "dhapi_test",
     "user": "dev",
     "password": "pass12"
