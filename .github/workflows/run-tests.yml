@@ -24,8 +24,6 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-#        volumes:
-#          - ./docker/provision/mysql/init:/docker-entrypoint-initdb.d
 
     steps:
       - name: Checkout code
@@ -36,32 +34,31 @@ jobs:
         with:
           go-version: 1.21
 
-#      - name: Wait for MySQL to be ready
-#        run: |
-#          until docker exec -it $(docker ps -qf "ancestor=mysql:8.0") mysqladmin ping --silent; do
-#            echo "Waiting for MySQL..."
-#            sleep 5
-#          done
+      - name: Wait for MySQL to be ready
+        run: |
+          until docker exec -it $(docker ps -qf "ancestor=mysql:8.0") mysqladmin ping --silent; do
+            echo "Waiting for MySQL..."
+            sleep 5
+          done
 
       - name: Debug environment variables
         run: printenv | sort
 
       - name: Run database migrations
         run: go run cmd/migrate/migrate.go -action up -config config_test.json
-
-      - name: Build and start Go application
-        run: |
-          docker build -t my-go-app -f docker/Dockerfile .
-          docker run -d \
-            -p 8089:8089 \
-            -e DB_HOST=${{ secrets.DB_HOST }} \
-            -e DB_USER=${{ secrets.DB_USER }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e DB_NAME=${{ secrets.DB_NAME }} \
-            my-go-app
+        env:
+          DB_HOST: mysql
+          DB_USER: dev
+          DB_PASSWORD: pass12
+          DB_NAME: dhapi_test
 
       - name: Run Go tests
         run: go test ./...
+        env:
+          DB_HOST: mysql
+          DB_USER: dev
+          DB_PASSWORD: pass12
+          DB_NAME: dhapi_test
 
       - name: Stop Docker containers
         run: docker stop $(docker ps -q)
