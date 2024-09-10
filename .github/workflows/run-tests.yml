@@ -23,7 +23,7 @@ jobs:
           MYSQL_PASSWORD: pass12
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout code
@@ -36,8 +36,13 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          until docker exec -it $(docker ps -qf "ancestor=mysql:8.0") mysqladmin ping --silent; do
-            echo "Waiting for MySQL..."
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysqladmin ping -h"127.0.0.1" --silent; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
             sleep 5
           done
 
