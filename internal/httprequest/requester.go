@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
-
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
 
@@ -35,7 +34,7 @@ func GetRequester(host string) (Requester, error) {
 
 	req := Requester{
 		Log:  l,
-		Host: host,
+		Host: host + "/",
 	}
 
 	return req, nil
