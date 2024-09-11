@@ -32,7 +32,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DB_HOST: db  # Service name for MySQL
-      TEST_URL: "http://app:8088"
+      TEST_URL: "http://localhost:8089"
     networks:
       - mynetwork
     depends_on:

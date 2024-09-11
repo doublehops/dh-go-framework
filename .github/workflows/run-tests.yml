@@ -41,17 +41,23 @@ jobs:
         run: |
           docker run -d --name app-container -p 8089:8089 your-app-image
 
+      - name: Check running containers
+        run: docker ps
+
       - name: Wait for application to be ready
         run: |
           echo "Waiting for application to be ready..."
-          for i in {1..30}; do
+          for i in {1..60}; do
             if curl --silent --fail http://localhost:8089/; then
               echo "Application is ready!"
               break
             fi
-            echo "Waiting for application... ($i/30)"
+            echo "Waiting for application... ($i/60)"
             sleep 5
           done
+
+      - name: Get application container logs
+        run: docker logs app-container
 
       - name: Wait for MySQL to be ready
         run: |
