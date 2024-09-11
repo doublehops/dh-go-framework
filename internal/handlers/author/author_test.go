@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/doublehops/dh-go-framework/internal/config"
 	"log"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/doublehops/dh-go-framework/internal/config"
 
 	"github.com/stretchr/testify/assert"
 
