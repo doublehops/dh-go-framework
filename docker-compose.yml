@@ -20,24 +20,24 @@ services:
       interval: 10s
       retries: 5
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8088:8088"
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      DB_HOST: db  # Service name for MySQL
-      TEST_URL: "http://localhost:8089"
-    networks:
-      - mynetwork
-    depends_on:
-      db:
-        condition: service_healthy
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8088:8088"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#      MYSQL_DATABASE: ${MYSQL_DATABASE}
+#      MYSQL_USER: ${MYSQL_USER}
+#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+#      DB_HOST: db  # Service name for MySQL
+#      TEST_URL: "http://localhost:8089"
+#    networks:
+#      - mynetwork
+#    depends_on:
+#      db:
+#        condition: service_healthy
 
 volumes:
   db-data:

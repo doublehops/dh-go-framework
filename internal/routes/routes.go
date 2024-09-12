@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/doublehops/dh-go-framework/internal/handlers/health"
 	"github.com/doublehops/dh-go-framework/internal/middleware"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	group "github.com/mythrnr/httprouter-group"
@@ -10,8 +11,10 @@ import (
 )
 
 func GetV1Routes(app *service.App) *group.RouteGroup {
-	authorHandle := author.New(app)
+	healthHandle := health.New(app)
+	healthGroup := group.New("/health").GET(healthHandle.Check)
 
+	authorHandle := author.New(app)
 	authorGroup := group.New("/author")
 	authorGroup.GET(authorHandle.GetAll).Middleware(middleware.AuthMiddleware)
 	authorGroup.Children(
@@ -35,6 +38,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	// )
 
 	g := group.New("/v1").Children(
+		healthGroup,
 		authorGroup,
 		// myNewTableGroup,
 		// Add new groups here.
