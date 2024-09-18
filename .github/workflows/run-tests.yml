@@ -39,17 +39,6 @@ jobs:
             sleep 5
           done
 
-      - name: Debug environment variables
-        run: printenv | sort
-
-      - name: Run database migrations
-        run: go run cmd/migrate/migrate.go -action up -config config_test.json
-        env:
-          DB_HOST: db
-          DB_USER: dev
-          DB_PASSWORD: pass12
-          DB_NAME: dhapi_test
-
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -64,6 +53,17 @@ jobs:
       - name: Run application container
         run: |
           docker run -d --name app-container -p 8088:8088 api-test-image
+
+      - name: Debug environment variables
+        run: printenv | sort
+
+      - name: Run database migrations
+        run: go run cmd/migrate/migrate.go -action up -config config_test.json
+        env:
+          DB_HOST: db
+          DB_USER: dev
+          DB_PASSWORD: pass12
+          DB_NAME: dhapi_test
 
       - name: Check running containers
         run: docker ps
