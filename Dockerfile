@@ -16,4 +16,3 @@ WORKDIR /root/
 COPY --from=builder /app/main .
 COPY --from=builder /app/config.json /root/config.json
 EXPOSE 8088
-CMD ["./main", "-config=config.json" ]

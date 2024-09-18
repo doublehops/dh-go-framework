@@ -17,6 +17,7 @@ func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 	db, err := sqlx.Connect("mysql", connectStr)
 	if err != nil {
 		l.Log.Error(fmt.Sprintf("unable to open db connection. %s", err))
+		l.Log.Error(fmt.Sprintf("Conn: user: %s; password: %s; host: %s; name: %s", cfg.User, cfg.Pass, cfg.Host, cfg.Name))
 
 		return db, err
 	}

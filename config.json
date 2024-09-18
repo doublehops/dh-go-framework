@@ -8,7 +8,7 @@
     "outputFormat": "text"
   },
   "database": {
-    "host": "db",
+    "host": "localhost",
     "name": "dhapi",
     "user": "dev",
     "password": "pass12"
