@@ -75,7 +75,7 @@ jobs:
               echo "Application is ready!"
               break
             fi
-            echo "Waiting for application... ($i/60)"
+            echo "Waiting for application... ($i/20)"
             sleep 5
           done
 
