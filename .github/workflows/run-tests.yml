@@ -96,5 +96,5 @@ jobs:
           DB_PASSWORD: pass12
           DB_NAME: dhapi_test
 
-#      - name: Stop Docker containers
-#        run: docker stop $(docker ps -q)
+      - name: Stop Docker containers
+        run: docker stop $(docker ps -q)
