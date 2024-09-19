@@ -68,28 +68,21 @@ jobs:
       - name: Check running containers
         run: docker ps
 
-      - name: Run database migrations
-        run: go run cmd/server/run.go -config config_test.json
-        env:
-          DB_HOST: db
-          DB_USER: dev
-          DB_PASSWORD: pass12
-          DB_NAME: dhapi_test
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Wait for application to be ready
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Start Go API
         run: |
-          echo "Waiting for application to be ready..."
-          for i in {1..20}; do
-            if curl --silent --fail http://localhost:8088/v1/health; then
-              echo "Application is ready!"
-              break
-            fi
-            echo "Waiting for application... ($i/20)"
-            sleep 5
-          done
-
-      - name: Get application container logs
-        run: docker logs app-container
+          nohup go run cmd/server/run.go -config config_test.json &
+          sleep 5  # Wait for the API to start
 
       - name: Run Go tests
         run: go test ./...
