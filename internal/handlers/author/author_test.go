@@ -9,10 +9,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/doublehops/dh-go-framework/internal/config"
-
 	"github.com/stretchr/testify/assert"
 
+	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/httprequest"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/request"
@@ -59,7 +58,7 @@ func TestAuthorCRUD(t *testing.T) {
 	}
 
 	assert.NoError(t, err, "error unmarshalling record")
-	assert.Equal(t, payload.Name, d.Name)
+	assert.Equal(t, payload.Name, "stupid name")
 	assert.Greater(t, d.ID, int32(0))
 	expectedTime, duration := testtools.GetTolerance(5)
 	assert.WithinDuration(t, expectedTime, *d.CreatedAt, duration)

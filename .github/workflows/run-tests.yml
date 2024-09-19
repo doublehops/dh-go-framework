@@ -47,13 +47,6 @@ jobs:
         with:
           go-version: 1.21
 
-#      - name: Build application Docker image
-#        run: docker build -t api-test-image -f Dockerfile_test .
-#
-#      - name: Run application container
-#        run: |
-#          docker run -d --name app-container -p 8088:8088 api-test-image
-
       - name: Debug environment variables
         run: printenv | sort
 
