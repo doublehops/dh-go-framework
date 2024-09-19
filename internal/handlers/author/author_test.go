@@ -58,7 +58,7 @@ func TestAuthorCRUD(t *testing.T) {
 	}
 
 	assert.NoError(t, err, "error unmarshalling record")
-	assert.Equal(t, payload.Name, "stupid name")
+	assert.Equal(t, payload.Name, d.Name)
 	assert.Greater(t, d.ID, int32(0))
 	expectedTime, duration := testtools.GetTolerance(5)
 	assert.WithinDuration(t, expectedTime, *d.CreatedAt, duration)
