@@ -45,3 +45,12 @@ build_container:
 
 conn_container:
 	docker run -it --name dhapi-container dhapi /bin/bash
+
+## Build test container
+build_test_container:
+	docker build -t api-test-image -f Dockerfile_test .
+
+run_test_container:
+	docker run --rm --name app-container --network mynetwork -p 8088:8088 api-test-image
+
+

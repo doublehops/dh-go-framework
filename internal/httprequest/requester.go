@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
-
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
 
@@ -18,11 +17,11 @@ type Requester struct {
 	Host string
 }
 
-const (
-	testHost = "http://localhost:8089/"
-)
+// const (
+// 	testHost = "http://localhost:8088/"
+// )
 
-func GetRequester() (Requester, error) {
+func GetRequester(host string) (Requester, error) {
 	logg := &config.Logging{
 		Writer:       "stdout",
 		LogLevel:     "DEBUG",
@@ -35,7 +34,7 @@ func GetRequester() (Requester, error) {
 
 	req := Requester{
 		Log:  l,
-		Host: testHost,
+		Host: host + "/",
 	}
 
 	return req, nil
