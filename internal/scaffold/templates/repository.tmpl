@@ -6,27 +6,29 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
+
 	"{{.Module}}/internal/logga"
 	"{{.Module}}/internal/model/{{.LowerCase}}"
 	"{{.Module}}/internal/repository"
 	req "{{.Module}}/internal/request"
 )
 
-type {{.PascalCase}} struct {
+type Repo struct {
 	l *logga.Logga
 }
 
-func New(logger *logga.Logga) *{{.PascalCase}} {
-	return &{{.PascalCase}}{
+func New(logger *logga.Logga) *Repo {
+	return &Repo {
 		l: logger,
 	}
 }
 
-func ({{.Initialisation}} *{{.PascalCase}}) Create(ctx context.Context, tx *sql.Tx, model *model.{{.PascalCase}}) error {
+func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
 	result, err := tx.Exec(insertRecordSQL, {{.InsertFields}})
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
-		{{.Initialisation}}.l.Error(ctx, errMsg, nil)
+		r.l.Error(ctx, errMsg, nil)
 
 		return fmt.Errorf(errMsg)
 	}
@@ -36,16 +38,16 @@ func ({{.Initialisation}} *{{.PascalCase}}) Create(ctx context.Context, tx *sql.
 		return err
 	}
 
-	model.ID = int32(lastInsertID)
+	record.ID = int32(lastInsertID)
 
 	return nil
 }
 
-func ({{.Initialisation}} *{{.PascalCase}}) Update(ctx context.Context, tx *sql.Tx, model *model.{{.PascalCase}}) error {
-	_, err := tx.Exec(updateRecordSQL, {{.UpdateFields}})
+func (r *Repo) Update(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
+	_, err := tx.NamedExec(updateRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
-		{{.Initialisation}}.l.Error(ctx, errMsg, nil)
+		r.l.Error(ctx, errMsg, nil)
 
 		return fmt.Errorf(errMsg)
 	}
@@ -53,11 +55,11 @@ func ({{.Initialisation}} *{{.PascalCase}}) Update(ctx context.Context, tx *sql.
 	return nil
 }
 
-func ({{.Initialisation}} *{{.PascalCase}}) Delete(ctx context.Context, tx *sql.Tx, model *model.{{.PascalCase}}) error {
-	_, err := tx.Exec(deleteRecordSQL, model.UpdatedAt, model.DeletedAt, model.ID)
+func (r *Repo) Delete(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
+	_, err := tx.NamedExec(deleteRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
-		{{.Initialisation}}.l.Error(ctx, errMsg, nil)
+		r.l.Error(ctx, errMsg, nil)
 
 		return fmt.Errorf(errMsg)
 	}
@@ -65,64 +67,34 @@ func ({{.Initialisation}} *{{.PascalCase}}) Delete(ctx context.Context, tx *sql.
 	return nil
 }
 
-func ({{.Initialisation}} *{{.PascalCase}}) GetByID(ctx context.Context, DB *sql.DB, ID int32, record *model.{{.PascalCase}}) error {
-	row := DB.QueryRow(selectByIDQuery, ID)
-
-	err := row.Scan({{.ScanFields}})
+func (r *Repo) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *{{.LowerCase}}.{{.PascalCase}}) error {
+	err := DB.Get(record, selectByIDQuery, ID)
 	if err != nil {
-		{{.Initialisation}}.l.Info(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
+		r.l.Error(ctx, "unable to fetch record", logga.KVPs{"ID": ID})
 
-		return fmt.Errorf("unable to fetch record %d. err: %s", ID, err)
+		return fmt.Errorf("unable to fetch record %d", ID)
 	}
 
 	return nil
 }
 
-func ({{.Initialisation}} *{{.PascalCase}}) GetAll(ctx context.Context, DB *sql.DB, p *req.Request) ([]*model.{{.PascalCase}}, error) {
+func (r *Repo) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*{{.LowerCase}}.{{.PascalCase}}, error) {
 	var (
-		records []*model.{{.PascalCase}}
-		rows    *sql.Rows
+		records []*{{.LowerCase}}.{{.PascalCase}}
 		err     error
 	)
 
 	countQ, countParams := repository.BuildQuery(selectCollectionCountQuery, p, true)
 	count, err := repository.GetRecordCount(DB, countQ, countParams)
 	if err != nil {
-		{{.Initialisation}}.l.Error(ctx, "GetAll()", logga.KVPs{"err": err})
+		r.l.Error(ctx, "GetCollection()", logga.KVPs{"err": err})
 	}
 	p.SetRecordCount(count)
 
 	q, params := repository.BuildQuery(selectCollectionQuery, p, false)
-
-	{{.Initialisation}}.l.Debug(ctx, "GetAll()", logga.KVPs{"query": q})
-	if len(params) == 0 {
-		rows, err = DB.Query(q)
-	} else {
-		rows, err = DB.Query(q, params...)
-	}
+	err = DB.Select(&records, q, params...)
 	if err != nil {
-		{{.Initialisation}}.l.Error(ctx, "GetAll() unable to fetch rows", logga.KVPs{"err": err})
-		return records, fmt.Errorf("unable to fetch rows")
-	}
-	defer rows.Close()
-	if err != nil {
-		{{.Initialisation}}.l.Error(ctx, "GetAll() unable to fetch rows", logga.KVPs{"err": err})
-
-		return records, fmt.Errorf("unable to fetch rows")
-	}
-	if rows.Err() != nil {
-		mnt.l.Error(ctx, "GetAll() unable to fetch rows", logga.KVPs{"err": rows.Err()})
-
-		return records, fmt.Errorf("unable to fetch rows")
-	}
-
-	for rows.Next() {
-		var record model.{{.PascalCase}}
-		if err = rows.Scan({{.ScanFields}}); err != nil {
-			return records, fmt.Errorf("unable to fetch rows. %s", err)
-		}
-
-		records = append(records, &record)
+		return records, fmt.Errorf("unable to retrieve records: %s", err.Error())
 	}
 
 	return records, nil

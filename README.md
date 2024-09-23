@@ -43,6 +43,6 @@ Make sure the database is running and app database settings configured.
 
 To run:
 ```
-make scaffold -table=<table_name>
+make scaffold table=<table_name>
 ```
 

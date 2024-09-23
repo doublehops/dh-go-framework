@@ -83,7 +83,7 @@ func getRule(col column, m Model) string {
 	case "int":
 		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.IsInt(\"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
 	default:
-		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}} %s,\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
+		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}}, %s,\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
 	}
 
 	return rule

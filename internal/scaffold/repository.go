@@ -58,7 +58,7 @@ func (s *Scaffold) getQueryFields(cols []column) (string, string, string) {
 	var updateColumns []string
 
 	for _, f := range cols {
-		insertCol := fmt.Sprintf("model.%s", f.CapitalisedAbbr)
+		insertCol := fmt.Sprintf("record.%s", f.CapitalisedAbbr)
 		insertColumns = append(insertColumns, insertCol)
 
 		selectCol := fmt.Sprintf("&record.%s", f.CapitalisedAbbr)
@@ -68,11 +68,11 @@ func (s *Scaffold) getQueryFields(cols []column) (string, string, string) {
 		if f.Original == "id" {
 			continue
 		}
-		updateCol := fmt.Sprintf("model.%s", f.CapitalisedAbbr)
+		updateCol := fmt.Sprintf("record.%s", f.CapitalisedAbbr)
 		updateColumns = append(updateColumns, updateCol)
 	}
 
-	updateColumns = append(updateColumns, "model.ID")
+	updateColumns = append(updateColumns, "record.ID")
 
 	insertFields := strings.Join(insertColumns[1:], ", ")
 	updateFields := strings.Join(updateColumns, ", ")

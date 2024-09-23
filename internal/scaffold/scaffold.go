@@ -82,7 +82,7 @@ const (
 	typeInt      columnType = "int"
 	typeString   columnType = "string"
 	typeBool     columnType = "bool"
-	typeDatetime columnType = "*datetime"
+	typeDatetime columnType = "*time.Time"
 )
 
 func New(pwd string, cfg Config, tableName string, db *sqlx.DB, logga *logga.Logga) *Scaffold {
