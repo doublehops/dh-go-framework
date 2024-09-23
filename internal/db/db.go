@@ -22,7 +22,5 @@ func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 		return db, err
 	}
 
-	l.Log.Info(">>>>>> Database connection success")
-
 	return db, nil
 }
