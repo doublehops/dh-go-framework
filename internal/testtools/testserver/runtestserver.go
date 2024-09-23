@@ -1,11 +1,10 @@
-package main
+package testserver
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -14,24 +13,14 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/db"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/routes"
-	"github.com/doublehops/dh-go-framework/internal/runflags"
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
-func main() {
-	if err := run(); err != nil {
-		log.Print(err.Error())
-		os.Exit(1)
-	}
-}
-
-func run() error {
+func RunTestServer() error {
 	ctx := context.Background()
 
-	flags := runflags.GetFlags()
-
 	// Setup config.
-	cfg, err := config.New(flags.ConfigFile)
+	cfg, err := config.New("./config_test.json")
 	if err != nil {
 		return fmt.Errorf("error starting main. %s", err.Error())
 	}
@@ -41,9 +30,6 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("error configuring logger. %s", err.Error())
 	}
-
-	lMsg := fmt.Sprintf("MySQL config found. %s", cfg.DB.Host)
-	l.Info(ctx, lMsg, nil)
 
 	// Setup db connection.
 	DB, err := db.New(l, cfg.DB)
@@ -67,10 +53,10 @@ func run() error {
 
 	mux := http.TimeoutHandler(router, time.Second*1, "Timeout!")
 
-	l.Info(ctx, "Starting server on port :"+cfg.Host.Port, nil)
+	l.Info(ctx, "Starting server on port :8088", nil)
 
 	// todo - This really needs to be replaced with something that allows timeouts.
-	err = http.ListenAndServe(":"+cfg.Host.Port, mux) // nolint:gosec // @todo - remove this exception.
+	err = http.ListenAndServe(":8088", mux) // nolint:gosec // @todo - remove this exception.
 	if err != nil {
 		return fmt.Errorf("unable to start server. %s", err.Error())
 	}

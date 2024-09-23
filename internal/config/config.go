@@ -2,14 +2,21 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 )
 
 type Config struct {
+	Host    Host    `json:"host"`
 	Logging Logging `json:"logging"`
 	DB      DB      `json:"database"`
+}
+
+type Host struct {
+	Port    string `json:"port"`
+	TestURL string `json:"testUrl"`
 }
 
 type Aggregator struct {
@@ -36,6 +43,9 @@ func New(configFile string) (*Config, error) {
 
 	pwd, _ := os.Getwd()
 	relPath := pwd + "/" + configFile
+	if _, err := os.Stat(relPath); errors.Is(err, os.ErrNotExist) {
+		relPath = pwd + "/../../../" + configFile // test path.
+	}
 
 	f, err := os.ReadFile(relPath)
 	if err != nil {

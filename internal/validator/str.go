@@ -13,7 +13,7 @@ func In(slice []any, errorMessage string) ValidationFuncs {
 			errorMessage = stringNotInSlice
 		}
 
-		// We want to convert the slice values into strings.
+		// We want to convert the slice values into strings.go.
 		var strSlice []string
 		for _, i := range slice {
 			item := fmt.Sprintf("%s", i)
