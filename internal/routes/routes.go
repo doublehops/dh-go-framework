@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/doublehops/dh-go-framework/internal/handlers/health"
+	"github.com/doublehops/dh-go-framework/internal/handlers/user"
 	"github.com/doublehops/dh-go-framework/internal/middleware"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	group "github.com/mythrnr/httprouter-group"
@@ -24,6 +25,17 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 		group.New("/:id").DELETE(authorHandle.DeleteByID),
 	)
 
+	userHandle := user.New(app)
+
+	userGroup := group.New("/user")
+	userGroup.GET(userHandle.GetAll).Middleware(middleware.AuthMiddleware)
+	userGroup.Children(
+		group.New("/:id").GET(userHandle.GetByID),
+		group.New("").POST(userHandle.Create),
+		group.New("/:id").PUT(userHandle.UpdateByID),
+		group.New("/:id").DELETE(userHandle.DeleteByID),
+	)
+
 	// New routes created by scaffolding can be added here.
 
 	// myNewTableHandle := mynewtable.New(app)
@@ -40,6 +52,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	g := group.New("/v1").Children(
 		healthGroup,
 		authorGroup,
+		userGroup,
 		// myNewTableGroup,
 		// Add new groups here.
 	)

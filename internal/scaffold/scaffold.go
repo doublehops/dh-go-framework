@@ -122,7 +122,7 @@ func (s *Scaffold) Run() error {
 		Module:         moduleName,
 
 		ServiceFilename:    "service" + RemoveUnderscores(s.tableName) + ".go",
-		RepositoryFilename: "repository" + RemoveUnderscores(s.tableName) + ".go",
+		RepositoryFilename: RemoveUnderscores(s.tableName) + "repository.go",
 
 		ServiceName:    ToPascalCase(s.tableName) + "Service",
 		RepositoryName: ToPascalCase(s.tableName) + "Repository",

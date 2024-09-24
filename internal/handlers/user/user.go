@@ -1,4 +1,4 @@
-package {{.LowerCase}}
+package user
 
 import (
 	"encoding/json"
@@ -7,27 +7,27 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"{{.Module}}/internal/handlers"
-	"{{.Module}}/internal/repository/{{.LowerCase}}repository"
-	model "{{.Module}}/internal/model/{{.LowerCase}}"
-	req "{{.Module}}/internal/request"
-	"{{.Module}}/internal/service"
-	"{{.Module}}/internal/service/{{.LowerCase}}service"
-	"{{.Module}}/internal/tools"
+	"github.com/doublehops/dh-go-framework/internal/handlers"
+	model "github.com/doublehops/dh-go-framework/internal/model/user"
+	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
+	req "github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/service"
+	"github.com/doublehops/dh-go-framework/internal/service/userservice"
+	"github.com/doublehops/dh-go-framework/internal/tools"
 )
 
 type Handle struct {
-	repo *{{.LowerCase}}repository.Repo
-	srv  *{{.LowerCase}}service.{{.ServiceName}}
+	repo *userrepository.Repo
+	srv  *userservice.UserService
 	base *handlers.BaseHandler
 }
 
 func New(app *service.App) *Handle {
-	repo := {{.LowerCase}}repository.New(app.Log)
+	repo := userrepository.New(app.Log)
 
 	return &Handle{
 		repo: repo,
-		srv:  {{.LowerCase}}service.New(app, repo),
+		srv:  userservice.New(app, repo),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},
@@ -36,9 +36,9 @@ func New(app *service.App) *Handle {
 
 func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
-	h.base.Log.Info(ctx, "Request made to "+ tools.CurrentFunction(), nil)
+	h.base.Log.Info(ctx, "Request made to "+tools.CurrentFunction(), nil)
 
-	record := &model.{{.PascalCase}}{}
+	record := &model.User{}
 	if err := json.NewDecoder(r.Body).Decode(record); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.UnableToParseResp())
 
@@ -65,7 +65,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)
-	h.base.Log.Info(ctx, "Request made to Update{{.PascalCase}}", nil)
+	h.base.Log.Info(ctx, "Request made to UpdateUser", nil)
 
 	ID := ps.ByName("id")
 	i, err := strconv.ParseInt(ID, 10, 32)
@@ -75,7 +75,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	record := &model.{{.PascalCase}}{}
+	record := &model.User{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, err)
@@ -122,7 +122,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)
-	h.base.Log.Info(ctx, "Request made to DELETE {{.CamelCase}}", nil)
+	h.base.Log.Info(ctx, "Request made to DELETE user", nil)
 
 	ID := ps.ByName("id")
 	i, err := strconv.ParseInt(ID, 10, 32)
@@ -132,7 +132,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	record := &model.{{.PascalCase}}{}
+	record := &model.User{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
@@ -165,7 +165,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)
-	h.base.Log.Info(ctx, "Request made to Get {{.CamelCase}}", nil)
+	h.base.Log.Info(ctx, "Request made to Get user", nil)
 
 	ID := ps.ByName("id")
 	i, err := strconv.ParseInt(ID, 10, 32)
@@ -175,7 +175,7 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	record := &model.{{.PascalCase}}{}
+	record := &model.User{}
 	err = h.srv.GetByID(ctx, record, int32(i))
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
@@ -225,7 +225,7 @@ func getSortableFields() []string {
 
 func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
-	h.base.Log.Info(ctx, "Request made to Get {{.CamelCase}}", nil)
+	h.base.Log.Info(ctx, "Request made to Get user", nil)
 
 	p := req.GetRequestParams(r, filterRules(), getSortableFields())
 

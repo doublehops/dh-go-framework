@@ -1,5 +1,4 @@
-package {{.LowerCase}}repository
-
+package userrepository
 
 import (
 	"context"
@@ -7,11 +6,11 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"{{.Module}}/internal/logga"
-	"{{.Module}}/internal/model/{{.LowerCase}}"
-	"{{.Module}}/internal/repository"
-	req "{{.Module}}/internal/request"
-	"{{.Module}}/internal/service"
+	"github.com/doublehops/dh-go-framework/internal/logga"
+	"github.com/doublehops/dh-go-framework/internal/model/user"
+	"github.com/doublehops/dh-go-framework/internal/repository"
+	req "github.com/doublehops/dh-go-framework/internal/request"
+	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
 type Repo struct {
@@ -19,12 +18,12 @@ type Repo struct {
 }
 
 func New(logger *logga.Logga) *Repo {
-	return &Repo {
+	return &Repo{
 		l: logger,
 	}
 }
 
-func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
+func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *user.User) error {
 	result, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -43,7 +42,7 @@ func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{
 	return nil
 }
 
-func (r *Repo) Update(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
+func (r *Repo) Update(ctx context.Context, tx *sqlx.Tx, record *user.User) error {
 	_, err := tx.NamedExec(updateRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -55,7 +54,7 @@ func (r *Repo) Update(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{
 	return nil
 }
 
-func (r *Repo) Delete(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
+func (r *Repo) Delete(ctx context.Context, tx *sqlx.Tx, record *user.User) error {
 	_, err := tx.NamedExec(deleteRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
@@ -67,7 +66,7 @@ func (r *Repo) Delete(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{
 	return nil
 }
 
-func (r *Repo) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *{{.LowerCase}}.{{.PascalCase}}) error {
+func (r *Repo) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *user.User) error {
 	err := DB.Get(record, selectByIDQuery, ID)
 	if err != nil {
 		r.l.Error(ctx, service.UnableToRetrieveRecord, logga.KVPs{"ID": ID})
@@ -78,9 +77,9 @@ func (r *Repo) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *{{.Lo
 	return nil
 }
 
-func (r *Repo) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*{{.LowerCase}}.{{.PascalCase}}, error) {
+func (r *Repo) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*user.User, error) {
 	var (
-		records []*{{.LowerCase}}.{{.PascalCase}}
+		records []*user.User
 		err     error
 	)
 

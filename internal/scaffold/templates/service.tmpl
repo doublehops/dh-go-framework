@@ -14,24 +14,24 @@ import (
 
 type {{.PascalCase}}Service struct {
 	*service.App
-	{{.CamelCase}}Repo *{{.LowerCase}}repository.{{.PascalCase}}
+	{{.CamelCase}}Repo *{{.LowerCase}}repository.Repo
 }
 
-func New(app *service.App, {{.LowerCase}}Repo *{{.LowerCase}}repository.{{.PascalCase}}) *{{.PascalCase}}Service {
+func New(app *service.App, {{.LowerCase}}Repo *{{.LowerCase}}repository.Repo) *{{.PascalCase}}Service {
 	return &{{.PascalCase}}Service{
 		App:        app,
 		{{.CamelCase}}Repo: {{.LowerCase}}Repo,
 	}
 }
 
-func (s {{.PascalCase}}Service) Create(ctx context.Context, record *model.{{.PascalCase}}) (*model.{{.PascalCase}}, error) {
+func (s {{.PascalCase}}Service) Create(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}) (*{{.LowerCase}}.{{.PascalCase}}, error) {
 	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
 
 	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}
 
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	err := s.{{.CamelCase}}Repo.Create(ctx, tx, record)
@@ -46,7 +46,7 @@ func (s {{.PascalCase}}Service) Create(ctx context.Context, record *model.{{.Pas
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.{{.PascalCase}}{}
+	a := &{{.CamelCase}}.{{.PascalCase}}{}
 	err = s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
@@ -55,10 +55,10 @@ func (s {{.PascalCase}}Service) Create(ctx context.Context, record *model.{{.Pas
 	return a, nil
 }
 
-func (s {{.PascalCase}}Service) Update(ctx context.Context, record *model.{{.PascalCase}}) (*model.{{.PascalCase}}, error) {
+func (s {{.PascalCase}}Service) Update(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}) (*{{.LowerCase}}.{{.PascalCase}}, error) {
 	record.SetUpdated(ctx)
 
-	tx, _ := s.DB.BeginTx(ctx, nil)
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	err := s.{{.CamelCase}}Repo.Update(ctx, tx, record)
@@ -71,7 +71,7 @@ func (s {{.PascalCase}}Service) Update(ctx context.Context, record *model.{{.Pas
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &model.{{.PascalCase}}{}
+	a := &{{.CamelCase}}.{{.PascalCase}}{}
 	err = s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
@@ -80,8 +80,8 @@ func (s {{.PascalCase}}Service) Update(ctx context.Context, record *model.{{.Pas
 	return a, nil
 }
 
-func (s {{.PascalCase}}Service) DeleteByID(ctx context.Context, record *model.{{.PascalCase}}) error {
-	tx, _ := s.DB.BeginTx(ctx, nil)
+func (s {{.PascalCase}}Service) DeleteByID(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}) error {
+	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
 	record.SetDeleted(ctx)
@@ -101,7 +101,7 @@ func (s {{.PascalCase}}Service) DeleteByID(ctx context.Context, record *model.{{
 	return nil
 }
 
-func (s {{.PascalCase}}Service) GetByID(ctx context.Context, record *model.{{.PascalCase}}, ID int32) error {
+func (s {{.PascalCase}}Service) GetByID(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}, ID int32) error {
 	err := s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
@@ -110,10 +110,10 @@ func (s {{.PascalCase}}Service) GetByID(ctx context.Context, record *model.{{.Pa
 	return nil
 }
 
-func (s {{.PascalCase}}Service) GetAll(ctx context.Context, r *req.Request) ([]*model.{{.PascalCase}}, error) {
-	records, err := s.{{.CamelCase}}Repo.GetAll(ctx, s.DB, r)
+func (s {{.PascalCase}}Service) GetAll(ctx context.Context, r *req.Request) ([]*{{.LowerCase}}.{{.PascalCase}}, error) {
+	records, err := s.{{.CamelCase}}Repo.GetCollection(ctx, s.DB, r)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve records. "+err.Error(), nil)
+		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
 	}
 
 	return records, nil

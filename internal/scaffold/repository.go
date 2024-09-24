@@ -15,7 +15,7 @@ const (
 func (s *Scaffold) createRepository(ctx context.Context, m Model) error {
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.InsertFields, m.UpdateFields, m.ScanFields = s.getQueryFields(m.Columns)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.RepositoryName)
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.LowerCase+"repository")
 	repositoryFilename := fmt.Sprintf("%s/%s.go", path, m.RepositoryFilename)
 	sqlFilename := fmt.Sprintf("%s/sql.go", path)
 
