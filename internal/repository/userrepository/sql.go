@@ -65,6 +65,22 @@ var selectByIDQuery = `SELECT
     WHERE id=?
     AND deleted_at IS NULL`
 
+var selectByEmailAddressQuery = `SELECT 
+	id,
+	organisation_id,
+	name,
+	email_address,
+	email_verified,
+	password,
+	password_reset_string,
+	password_reset_expire,
+	is_active,
+	created_at,
+	updated_at,
+	deleted_at
+    FROM user
+    WHERE email_address=?`
+
 var selectCollectionQuery = `SELECT 
 	id,
 	organisation_id,

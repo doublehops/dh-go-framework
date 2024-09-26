@@ -54,7 +54,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 	a, err := h.srv.Create(ctx, record)
 	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.GeneralErrResp(req.ErrProcessingRequest.Error()))
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp(req.ErrProcessingRequest.Error()))
 
 		return
 	}

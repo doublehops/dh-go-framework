@@ -52,9 +52,21 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
+	if err := h.srv.GetByEmailAddress(ctx, record, record.EmailAddress); err != nil {
+		h.base.Log.Error(ctx, "error retrieving record by email address"+err.Error(), nil)
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("unable to process request"))
+
+		return
+	}
+	if record.EmailAddress != "" {
+		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp("Email address already exists", http.StatusBadRequest))
+
+		return
+	}
+
 	a, err := h.srv.Create(ctx, record)
 	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.GeneralErrResp(req.ErrProcessingRequest.Error()))
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp(req.ErrProcessingRequest.Error()))
 
 		return
 	}

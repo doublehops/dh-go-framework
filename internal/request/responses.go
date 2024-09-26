@@ -24,7 +24,17 @@ func GetSingleItemResp(data interface{}) SingleItemResp {
 	}
 }
 
-func GeneralErrResp(msg string) GeneralErrorResp {
+func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
+	return GeneralErrorResp{
+		Name:    "there was an error processing request",
+		Message: msg,
+		Code:    statusCode,
+		Status:  "error",
+		Errors:  nil,
+	}
+}
+
+func ServerErrResp(msg string) GeneralErrorResp {
 	return GeneralErrorResp{
 		Name:    "there was an error processing request",
 		Message: msg,

@@ -77,6 +77,17 @@ func (r *Repo) GetByID(ctx context.Context, DB *sqlx.DB, ID int32, record *user.
 	return nil
 }
 
+func (r *Repo) GetByEmailAddress(ctx context.Context, DB *sqlx.DB, emailAddress string, record *user.User) error {
+	err := DB.Get(record, selectByEmailAddressQuery, emailAddress)
+	if err != nil {
+		r.l.Error(ctx, service.UnableToRetrieveRecord, logga.KVPs{"emailAddress": emailAddress})
+
+		return fmt.Errorf("%s %d", service.UnableToRetrieveRecord, emailAddress)
+	}
+
+	return nil
+}
+
 func (r *Repo) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) ([]*user.User, error) {
 	var (
 		records []*user.User

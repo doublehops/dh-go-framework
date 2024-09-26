@@ -118,3 +118,12 @@ func (s UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, 
 
 	return records, nil
 }
+
+func (s UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
+	err := s.userRepo.GetByEmailAddress(ctx, s.DB, emailAddress, record)
+	if err != nil {
+		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+	}
+
+	return nil
+}
