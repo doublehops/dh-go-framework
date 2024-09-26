@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/user"
 	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
@@ -25,7 +24,8 @@ func New(app *service.App, userRepo *userrepository.Repo) *UserService {
 }
 
 func (s UserService) Create(ctx context.Context, record *user.User) (*user.User, error) {
-	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
+	record.OrganisationID = 1
+	record.IsActive = 1
 
 	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})

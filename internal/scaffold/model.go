@@ -48,7 +48,7 @@ func getStructProperties(columns []column) string {
 			continue
 		}
 
-		properties += fmt.Sprintf("%s %s `json:\"%s\"`\n", col.CapitalisedAbbr, col.Type, col.CamelCase)
+		properties += fmt.Sprintf("%s %s `json:\"%s\" db:\"%s\"`\n", col.CapitalisedAbbr, col.Type, col.CamelCase, col.Original)
 	}
 
 	return properties

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"{{.Module}}/internal/model/{{.LowerCase}}"
-	"{{.Module}}/internal/app"
 	"{{.Module}}/internal/logga"
 	"{{.Module}}/internal/repository/{{.LowerCase}}repository"
 	"{{.Module}}/internal/service"
@@ -25,8 +24,6 @@ func New(app *service.App, {{.LowerCase}}Repo *{{.LowerCase}}repository.Repo) *{
 }
 
 func (s {{.PascalCase}}Service) Create(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}) (*{{.LowerCase}}.{{.PascalCase}}, error) {
-	ctx = context.WithValue(ctx, app.UserIDKey, 1) // todo - set this in middleware.
-
 	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
 	}

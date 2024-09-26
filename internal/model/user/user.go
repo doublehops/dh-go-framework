@@ -10,26 +10,26 @@ import (
 
 type User struct {
 	model.BaseModel
-	OrganisationID       int        `json:"organisationId"`
-	Name                 string     `json:"name"`
-	EmailAddress         string     `json:"emailAddress"`
-	EmailVerified        int        `json:"emailVerified"`
-	Password             string     `json:"password"`
-	PasswordResetString  string     `json:"passwordResetString"`
-	PasswordResetTimeout *time.Time `json:"passwordResetTimeout"`
-	IsActive             int        `json:"isActive"`
+	OrganisationID      int        `json:"organisationId" db:"organisation_id"`
+	Name                string     `json:"name" db:"name"`
+	EmailAddress        string     `json:"emailAddress" db:"email_address"`
+	EmailVerified       int        `json:"emailVerified" db:"email_verified"`
+	Password            string     `json:"password" db:"password"`
+	PasswordResetString string     `json:"passwordResetString" db:"password_reset_string"`
+	PasswordResetExpire *time.Time `json:"passwordResetExpire" db:"password_reset_expire"`
+	IsActive            int        `json:"isActive" db:"is_active"`
 }
 
 func (u *User) getRules() []validator.Rule {
 	return []validator.Rule{
-		{"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                           //nolint:govet
-		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                                 //nolint:govet
-		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                 //nolint:govet
-		{"emailVerified", u.EmailVerified, true, []validator.ValidationFuncs{validator.IsInt("")}},                             //nolint:govet
-		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                         //nolint:govet
-		{"passwordResetString", u.PasswordResetString, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},   //nolint:govet
-		{"passwordResetTimeout", u.PasswordResetTimeout, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet,
-		{"isActive", u.IsActive, true, []validator.ValidationFuncs{validator.IsInt("")}},                                       //nolint:govet
+		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet
+		// {"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                               //nolint:govet
+		// {"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},               //nolint:govet
+		// {"emailVerified", u.EmailVerified, true, []validator.ValidationFuncs{validator.IsInt("")}},                           //nolint:govet
+		// {"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                       //nolint:govet
+		// {"passwordResetString", u.PasswordResetString, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet
+		// {"passwordResetExpire", u.PasswordResetExpire, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet,
+		// {"isActive", u.IsActive, true, []validator.ValidationFuncs{validator.IsInt("")}},                                     //nolint:govet
 
 	}
 }

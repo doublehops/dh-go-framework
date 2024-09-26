@@ -98,8 +98,8 @@ func (s *Scaffold) setColumnSQLParams(m *Model) {
 		}
 
 		insertCols += fmt.Sprintf("\t%s,\n", col.Original)
-		insertQs += "?,\n"
-		updateStmt += fmt.Sprintf("\t%s=?,\n", col.Original)
+		insertQs += fmt.Sprintf("\t:%s,\n", col.Original)
+		updateStmt += fmt.Sprintf("\t%s=:%s,\n", col.Original, col.Original)
 	}
 
 	// Remove two last chars (comma and carriage return) of each string.

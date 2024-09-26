@@ -7,38 +7,38 @@ var insertRecordSQL = `INSERT INTO user (
 	email_verified,
 	password,
 	password_reset_string,
-	password_reset_timeout,
+	password_reset_expire,
 	is_active,
 	created_at,
 	updated_at,
 	deleted_at
 	  ) VALUES (
-?,
-?,
-?,
-?,
-?,
-?,
-?,
-?,
-?,
-?,
-?
+	:organisation_id,
+	:name,
+	:email_address,
+	:email_verified,
+	:password,
+	:password_reset_string,
+	:password_reset_expire,
+	:is_active,
+	:created_at,
+	:updated_at,
+	:deleted_at
 	)
 `
 
 var updateRecordSQL = `UPDATE user SET
-	organisation_id=?,
-	name=?,
-	email_address=?,
-	email_verified=?,
-	password=?,
-	password_reset_string=?,
-	password_reset_timeout=?,
-	is_active=?,
-	created_at=?,
-	updated_at=?,
-	deleted_at=?
+	organisation_id=:organisation_id,
+	name=:name,
+	email_address=:email_address,
+	email_verified=:email_verified,
+	password=:password,
+	password_reset_string=:password_reset_string,
+	password_reset_expire=:password_reset_expire,
+	is_active=:is_active,
+	created_at=:created_at,
+	updated_at=:updated_at,
+	deleted_at=:deleted_at
 	WHERE id=?
 `
 
@@ -56,7 +56,7 @@ var selectByIDQuery = `SELECT
 	email_verified,
 	password,
 	password_reset_string,
-	password_reset_timeout,
+	password_reset_expire,
 	is_active,
 	created_at,
 	updated_at,
@@ -73,7 +73,7 @@ var selectCollectionQuery = `SELECT
 	email_verified,
 	password,
 	password_reset_string,
-	password_reset_timeout,
+	password_reset_expire,
 	is_active,
 	created_at,
 	updated_at,
