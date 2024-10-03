@@ -35,6 +35,8 @@ func New(app *service.App) *Handle {
 }
 
 func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var emailAddressExists bool
+	var err error
 	ctx := r.Context()
 	h.base.Log.Info(ctx, "Request made to "+tools.CurrentFunction(), nil)
 
@@ -52,15 +54,14 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	testRecord := &model.User{}
-	if err := h.srv.GetByEmailAddress(ctx, testRecord, record.EmailAddress); err != nil {
-		h.base.Log.Error(ctx, "error retrieving record by email address"+err.Error(), nil)
-		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("unable to process request"))
+	if emailAddressExists, err = h.srv.EmailAddressAlreadyExists(ctx, record.EmailAddress); err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp(req.ErrProcessingRequest.Error()))
 
 		return
 	}
-	if testRecord.EmailAddress != "" {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp("Email address already exists", http.StatusBadRequest))
+
+	if emailAddressExists {
+		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp("email address already exists", http.StatusBadRequest))
 
 		return
 	}

@@ -23,7 +23,7 @@ func New(app *service.App, userRepo *userrepository.Repo) *UserService {
 	}
 }
 
-func (s UserService) Create(ctx context.Context, record *user.User) (*user.User, error) {
+func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User, error) {
 	record.OrganisationID = 1
 	record.IsActive = 1
 
@@ -55,7 +55,7 @@ func (s UserService) Create(ctx context.Context, record *user.User) (*user.User,
 	return a, nil
 }
 
-func (s UserService) Update(ctx context.Context, record *user.User) (*user.User, error) {
+func (s *UserService) Update(ctx context.Context, record *user.User) (*user.User, error) {
 	record.SetUpdated(ctx)
 
 	tx := s.DB.MustBegin()
@@ -80,7 +80,7 @@ func (s UserService) Update(ctx context.Context, record *user.User) (*user.User,
 	return a, nil
 }
 
-func (s UserService) DeleteByID(ctx context.Context, record *user.User) error {
+func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
@@ -101,7 +101,7 @@ func (s UserService) DeleteByID(ctx context.Context, record *user.User) error {
 	return nil
 }
 
-func (s UserService) GetByID(ctx context.Context, record *user.User, ID int32) error {
+func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) error {
 	err := s.userRepo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
@@ -110,7 +110,7 @@ func (s UserService) GetByID(ctx context.Context, record *user.User, ID int32) e
 	return nil
 }
 
-func (s UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, error) {
+func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, error) {
 	records, err := s.userRepo.GetCollection(ctx, s.DB, r)
 	if err != nil {
 		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
@@ -119,7 +119,7 @@ func (s UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, 
 	return records, nil
 }
 
-func (s UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
+func (s *UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
 	err := s.userRepo.GetByEmailAddress(ctx, s.DB, emailAddress, record)
 	if err != nil {
 		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
