@@ -3,6 +3,7 @@ package userservice
 import (
 	"context"
 	"errors"
+
 	model "github.com/doublehops/dh-go-framework/internal/model/user"
 )
 

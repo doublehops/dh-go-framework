@@ -95,7 +95,7 @@ func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	return nil
@@ -104,7 +104,7 @@ func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
 func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) error {
 	err := s.userRepo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	return nil
@@ -122,7 +122,7 @@ func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User,
 func (s *UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
 	err := s.userRepo.GetByEmailAddress(ctx, s.DB, emailAddress, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return nil

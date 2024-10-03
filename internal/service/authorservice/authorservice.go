@@ -112,7 +112,7 @@ func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID in
 func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
 	records, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {
-		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return records, nil

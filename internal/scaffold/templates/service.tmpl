@@ -65,13 +65,13 @@ func (s *{{.PascalCase}}Service) Update(ctx context.Context, record *{{.LowerCas
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	a := &{{.CamelCase}}.{{.PascalCase}}{}
 	err = s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, record.ID, a)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return a, nil
@@ -92,7 +92,7 @@ func (s *{{.PascalCase}}Service) DeleteByID(ctx context.Context, record *{{.Lowe
 
 	err = tx.Commit()
 	if err != nil {
-		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
 	}
 
 	return nil
@@ -101,7 +101,7 @@ func (s *{{.PascalCase}}Service) DeleteByID(ctx context.Context, record *{{.Lowe
 func (s *{{.PascalCase}}Service) GetByID(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}, ID int32) error {
 	err := s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, ID, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return nil
@@ -110,7 +110,7 @@ func (s *{{.PascalCase}}Service) GetByID(ctx context.Context, record *{{.LowerCa
 func (s *{{.PascalCase}}Service) GetAll(ctx context.Context, r *req.Request) ([]*{{.LowerCase}}.{{.PascalCase}}, error) {
 	records, err := s.{{.CamelCase}}Repo.GetCollection(ctx, s.DB, r)
 	if err != nil {
-		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return records, nil
