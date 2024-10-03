@@ -13,9 +13,10 @@ type User struct {
 	OrganisationID      int        `json:"organisationId" db:"organisation_id"`
 	Name                string     `json:"name" db:"name"`
 	EmailAddress        string     `json:"emailAddress" db:"email_address"`
-	EmailVerified       int        `json:"emailVerified" db:"email_verified"`
+	EmailVerified       bool       `json:"emailVerified" db:"email_verified"`
+	EmailVerifiedToken  int        `json:"emailVerifiedToken" db:"email_verified_token"`
 	Password            string     `json:"password" db:"password"`
-	PasswordResetString string     `json:"passwordResetString" db:"password_reset_string"`
+	PasswordResetCode   string     `json:"passwordResetToken" db:"password_reset_token"`
 	PasswordResetExpire *time.Time `json:"passwordResetExpire" db:"password_reset_expire"`
 	IsActive            int        `json:"isActive" db:"is_active"`
 }

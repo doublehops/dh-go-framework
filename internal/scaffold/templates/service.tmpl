@@ -33,7 +33,7 @@ func (s *{{.PascalCase}}Service) Create(ctx context.Context, record *{{.LowerCas
 
 	err := s.{{.CamelCase}}Repo.Create(ctx, tx, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to save new record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 
 		return record, req.ErrCouldNotSaveRecord
 	}
@@ -44,12 +44,14 @@ func (s *{{.PascalCase}}Service) Create(ctx context.Context, record *{{.LowerCas
 	}
 
 	a := &{{.CamelCase}}.{{.PascalCase}}{}
-	err = s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, record.ID, a)
+	err = s.{{.CamelCase}}Repo.GetByID(ctx, s.DB, record.ID, r)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return r, errors.New(service.UnableToRetrieveRecord)
 	}
 
-	return a, nil
+	return r, nil
 }
 
 func (s *{{.PascalCase}}Service) Update(ctx context.Context, record *{{.LowerCase}}.{{.PascalCase}}) (*{{.LowerCase}}.{{.PascalCase}}, error) {
