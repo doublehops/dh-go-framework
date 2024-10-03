@@ -52,13 +52,14 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	if err := h.srv.GetByEmailAddress(ctx, record, record.EmailAddress); err != nil {
+	testRecord := &model.User{}
+	if err := h.srv.GetByEmailAddress(ctx, testRecord, record.EmailAddress); err != nil {
 		h.base.Log.Error(ctx, "error retrieving record by email address"+err.Error(), nil)
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("unable to process request"))
 
 		return
 	}
-	if record.EmailAddress != "" {
+	if testRecord.EmailAddress != "" {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp("Email address already exists", http.StatusBadRequest))
 
 		return
