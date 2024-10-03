@@ -82,7 +82,7 @@ func (r *Repo) GetByEmailAddress(ctx context.Context, DB *sqlx.DB, emailAddress 
 	if err != nil {
 		r.l.Error(ctx, service.UnableToRetrieveRecord, logga.KVPs{"emailAddress": emailAddress})
 
-		return fmt.Errorf("%s %d", service.UnableToRetrieveRecord, emailAddress)
+		return fmt.Errorf("%s %s", service.UnableToRetrieveRecord, emailAddress)
 	}
 
 	return nil
