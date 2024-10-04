@@ -43,51 +43,18 @@ var deleteRecordSQL = `UPDATE user SET
 `
 
 var selectByIDQuery = `SELECT 
-	id,
-	organisation_id,
-	name,
-	email_address,
-	email_verified,
-	password,
-	password_reset_token,
-	password_reset_expire,
-	is_active,
-	created_at,
-	updated_at,
-	deleted_at
+	*
     FROM user
     WHERE id=?
     AND deleted_at IS NULL`
 
 var selectByEmailAddressQuery = `SELECT 
-	id,
-	organisation_id,
-	name,
-	email_address,
-	email_verified,
-	password,
-	password_reset_token,
-	password_reset_expire,
-	is_active,
-	created_at,
-	updated_at,
-	deleted_at
+	*
     FROM user
     WHERE email_address=?`
 
 var selectCollectionQuery = `SELECT 
-	id,
-	organisation_id,
-	name,
-	email_address,
-	email_verified,
-	password,
-	password_reset_token,
-	password_reset_expire,
-	is_active,
-	created_at,
-	updated_at,
-	deleted_at
+	*
     FROM user
 `
 

@@ -14,14 +14,14 @@ type User struct {
 	Name                string     `json:"name" db:"name"`
 	EmailAddress        string     `json:"emailAddress" db:"email_address"`
 	EmailVerified       bool       `json:"emailVerified" db:"email_verified"`
-	EmailVerifiedToken  int        `json:"emailVerifiedToken" db:"email_verified_token"`
+	EmailVerifiedToken  string     `json:"emailVerifiedToken" db:"email_verified_token"`
 	Password            string     `json:"password" db:"password"`
 	PasswordResetCode   string     `json:"passwordResetToken" db:"password_reset_token"`
 	PasswordResetExpire *time.Time `json:"passwordResetExpire" db:"password_reset_expire"`
 	IsActive            int        `json:"isActive" db:"is_active"`
 }
 
-type UserCreate struct {
+type CreateUser struct {
 	model.BaseModel
 	Name         string `json:"name" db:"name"`
 	EmailAddress string `json:"emailAddress" db:"email_address"`
