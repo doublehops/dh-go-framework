@@ -8,6 +8,8 @@ import (
 )
 
 const (
+	UnableToSaveRecord        = "unable to save record"
+	UnableToUpdateRecord      = "unable to update record"
 	UnableToRetrieveRecord    = "unable to retrieve record"
 	UnableToCommitTransaction = "unable to commit transaction"
 )

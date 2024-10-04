@@ -37,7 +37,7 @@ func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User
 
 	err := s.userRepo.Create(ctx, tx, record)
 	if err != nil {
-		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToSaveRecord+" "+err.Error(), nil)
 
 		return record, req.ErrCouldNotSaveRecord
 	}
@@ -66,7 +66,7 @@ func (s *UserService) Update(ctx context.Context, record *user.User) (*user.User
 
 	err := s.userRepo.Update(ctx, tx, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to update record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToUpdateRecord+" "+err.Error(), nil)
 	}
 
 	err = tx.Commit()
@@ -74,13 +74,13 @@ func (s *UserService) Update(ctx context.Context, record *user.User) (*user.User
 		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
 	}
 
-	a := &user.User{}
-	err = s.userRepo.GetByID(ctx, s.DB, record.ID, a)
+	r := &user.User{}
+	err = s.userRepo.GetByID(ctx, s.DB, record.ID, r)
 	if err != nil {
-		s.Log.Error(ctx, "unable to retrieve record. "+err.Error(), nil)
+		return r, errors.New(service.UnableToRetrieveRecord)
 	}
 
-	return a, nil
+	return r, nil
 }
 
 func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
@@ -116,7 +116,7 @@ func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) 
 func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, error) {
 	records, err := s.userRepo.GetCollection(ctx, s.DB, r)
 	if err != nil {
-		s.Log.Error(ctx, "unable to update new record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
 
 	return records, nil

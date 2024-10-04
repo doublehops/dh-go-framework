@@ -37,7 +37,7 @@ func (s AuthorService) Create(ctx context.Context, record *author.Author) (*auth
 
 	err := s.authorRepo.Create(ctx, tx, record)
 	if err != nil {
-		s.Log.Error(ctx, "unable to save new record. "+err.Error(), nil)
+		s.Log.Error(ctx, service.UnableToSaveRecord+" "+err.Error(), nil)
 
 		return record, req.ErrCouldNotSaveRecord
 	}
