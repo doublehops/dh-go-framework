@@ -21,13 +21,20 @@ type User struct {
 	IsActive            int        `json:"isActive" db:"is_active"`
 }
 
-func (u *User) getRules() []validator.Rule {
+type UserCreate struct {
+	model.BaseModel
+	Name         string `json:"name" db:"name"`
+	EmailAddress string `json:"emailAddress" db:"email_address"`
+	Password     string `json:"password" db:"password"`
+}
+
+func (u *User) getUserCreateRules() []validator.Rule {
 	return []validator.Rule{
 		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet
 		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},          //nolint:govet
 		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.EmailAddress("")}}, //nolint:govet
 		// {"emailVerified", u.EmailVerified, true, []validator.ValidationFuncs{validator.IsInt("")}},                           //nolint:govet
-		// {"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},                       //nolint:govet
+		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet
 		// {"passwordResetString", u.PasswordResetString, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet
 		// {"passwordResetExpire", u.PasswordResetExpire, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet,
 		// {"isActive", u.IsActive, true, []validator.ValidationFuncs{validator.IsInt("")}},                                     //nolint:govet
@@ -35,6 +42,6 @@ func (u *User) getRules() []validator.Rule {
 	}
 }
 
-func (u *User) Validate() req.ErrMsgs {
-	return validator.RunValidation(u.getRules())
+func (u *User) ValidateCreate() req.ErrMsgs {
+	return validator.RunValidation(u.getUserCreateRules())
 }
