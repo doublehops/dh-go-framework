@@ -27,6 +27,14 @@ func New(app *service.App, userRepo *userrepository.Repo) *UserService {
 func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User, error) {
 	record.OrganisationID = 1
 	record.IsActive = 1
+	hashedPassword, err := s.HashPassword(record.Password)
+	if err != nil {
+		s.Log.Error(ctx, "unable to has password", logga.KVPs{"error": err.Error()})
+
+		return nil, errors.New("unable to has password")
+	}
+
+	record.Password = hashedPassword
 
 	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
@@ -35,7 +43,7 @@ func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
 
-	err := s.userRepo.Create(ctx, tx, record)
+	err = s.userRepo.Create(ctx, tx, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToSaveRecord+" "+err.Error(), nil)
 

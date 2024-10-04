@@ -3,6 +3,7 @@ package userservice
 import (
 	"context"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 
 	model "github.com/doublehops/dh-go-framework/internal/model/user"
 )
@@ -21,4 +22,19 @@ func (s *UserService) EmailAddressAlreadyExists(ctx context.Context, emailAddres
 	}
 
 	return false, nil
+}
+
+// HashPassword hashes a password using bcrypt.
+func (s *UserService) HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+// CheckPasswordHash checks if the hashed password matches the plaintext password.
+func (s *UserService) CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
