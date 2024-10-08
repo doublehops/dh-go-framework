@@ -1,10 +1,13 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/copier"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/doublehops/dh-go-framework/internal/handlers"
@@ -73,7 +76,43 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(a))
+	userResponse, err := h.GetResponse(ctx, a)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
+}
+
+func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.ResponseUser, error) {
+	userResponse := &model.ResponseUser{}
+	err := copier.Copy(&userResponse, &record)
+	if err != nil {
+		h.base.Log.Error(ctx, "error building response object", nil)
+
+		return nil, errors.New("error building response object")
+	}
+
+	return userResponse, nil
+}
+
+func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.User) ([]*model.ResponseUser, error) {
+	response := []*model.ResponseUser{}
+	for _, record := range records {
+		userResponse := &model.ResponseUser{}
+		err := copier.Copy(&userResponse, &record)
+		if err != nil {
+			h.base.Log.Error(ctx, "error building response object", nil)
+
+			return nil, errors.New("error building response object")
+		}
+
+		response = append(response, userResponse)
+	}
+
+	return response, nil
 }
 
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -130,7 +169,14 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(record))
+	userResponse, err := h.GetResponse(ctx, record)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
 }
 
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -210,7 +256,14 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//	 return
 	// }
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(record))
+	userResponse, err := h.GetResponse(ctx, record)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
 }
 
 func filterRules() []req.FilterRule {
@@ -237,6 +290,7 @@ func getSortableFields() []string {
 	}
 }
 
+// GetAll will retrieve all records for output.
 func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
 	h.base.Log.Info(ctx, "Request made to Get user", nil)
@@ -250,5 +304,12 @@ func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetListResp(records, p))
+	userResponse, err := h.GetCollectionResponse(ctx, records)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetListResp(userResponse, p))
 }

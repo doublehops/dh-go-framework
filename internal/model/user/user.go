@@ -21,6 +21,15 @@ type User struct {
 	IsActive            int        `json:"isActive" db:"is_active"`
 }
 
+type ResponseUser struct {
+	model.BaseModel
+	OrganisationID int    `json:"organisationId"`
+	Name           string `json:"name"`
+	EmailAddress   string `json:"emailAddress"`
+	EmailVerified  bool   `json:"emailVerified"`
+	IsActive       int    `json:"isActive"`
+}
+
 type CreateUser struct {
 	model.BaseModel
 	Name         string `json:"name" db:"name"`
