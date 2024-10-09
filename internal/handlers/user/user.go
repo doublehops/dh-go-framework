@@ -102,7 +102,7 @@ func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.Use
 	response := []*model.ResponseUser{}
 	for _, record := range records {
 		userResponse := &model.ResponseUser{}
-		err := copier.Copy(&userResponse, &record)
+		err := copier.Copy(&userResponse, record)
 		if err != nil {
 			h.base.Log.Error(ctx, "error building response object", nil)
 

@@ -283,7 +283,7 @@ func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.{{.
 	response := []*model.Response{{.PascalCase}}{}
 	for _, record := range records {
 		res := &model.Response{{.PascalCase}}{}
-		err := copier.Copy(&res, &record)
+		err := copier.Copy(&res, record)
 		if err != nil {
 			h.base.Log.Error(ctx, "error building response object", nil)
 

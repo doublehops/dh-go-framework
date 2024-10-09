@@ -3,6 +3,7 @@ package userservice
 import (
 	"context"
 	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 
 	model "github.com/doublehops/dh-go-framework/internal/model/user"
@@ -30,11 +31,13 @@ func (s *UserService) HashPassword(password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(hashedPassword), nil
 }
 
 // CheckPasswordHash checks if the hashed password matches the plaintext password.
 func (s *UserService) CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+
 	return err == nil
 }
