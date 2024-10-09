@@ -76,14 +76,14 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	userResponse, err := h.GetResponse(ctx, a)
+	response, err := h.GetResponse(ctx, a)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
 func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.ResponseUser, error) {
@@ -169,14 +169,14 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	userResponse, err := h.GetResponse(ctx, record)
+	response, err := h.GetResponse(ctx, record)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -256,14 +256,14 @@ func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	//	 return
 	// }
 
-	userResponse, err := h.GetResponse(ctx, record)
+	response, err := h.GetResponse(ctx, record)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(userResponse))
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
 func filterRules() []req.FilterRule {
@@ -304,12 +304,12 @@ func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	userResponse, err := h.GetCollectionResponse(ctx, records)
+	response, err := h.GetCollectionResponse(ctx, records)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
 		return
 	}
 
-	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetListResp(userResponse, p))
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetListResp(response, p))
 }

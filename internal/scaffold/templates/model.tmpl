@@ -13,6 +13,11 @@ type {{.PascalCase}} struct {
 	{{.ModelStructProperties}}
 }
 
+type Response{{.PascalCase}} struct {
+	model.BaseModel
+	{{.ModelStructProperties}}
+}
+
 func ({{.FirstInitial}} *{{.PascalCase}}) getRules() []validator.Rule {
 	return []validator.Rule{
 		{{.ValidationRules}}
