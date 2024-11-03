@@ -155,7 +155,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	if errors := record.ValidateCreate(); len(errors) > 0 {
+	if errors := record.ValidateUpdate(); len(errors) > 0 {
 		errs := req.GetValidateErrResp(errors, req.ErrValidation.Error())
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, errs)
 

@@ -22,18 +22,12 @@ var insertRecordSQL = `INSERT INTO user (
 `
 
 var updateRecordSQL = `UPDATE user SET
-	organisation_id=:organisation_id,
 	name=:name,
-	email_address=:email_address,
-	email_verified=:email_verified,
-	password=:password,
-	password_reset_token=:password_reset_token,
-	password_reset_expire=:password_reset_expire,
 	is_active=:is_active,
 	created_at=:created_at,
 	updated_at=:updated_at,
 	deleted_at=:deleted_at
-	WHERE id=?
+	WHERE id=:id
 `
 
 var deleteRecordSQL = `UPDATE user SET

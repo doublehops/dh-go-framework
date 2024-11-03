@@ -37,6 +37,11 @@ type CreateUser struct {
 	Password     string `json:"password" db:"password"`
 }
 
+type UpdateUser struct {
+	model.BaseModel
+	Name string `json:"name" db:"name"`
+}
+
 func (u *User) getUserCreateRules() []validator.Rule {
 	return []validator.Rule{
 		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet
@@ -51,6 +56,16 @@ func (u *User) getUserCreateRules() []validator.Rule {
 	}
 }
 
+func (u *User) getUserUpdateRules() []validator.Rule {
+	return []validator.Rule{
+		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet
+	}
+}
+
 func (u *User) ValidateCreate() req.ErrMsgs {
 	return validator.RunValidation(u.getUserCreateRules())
+}
+
+func (u *User) ValidateUpdate() req.ErrMsgs {
+	return validator.RunValidation(u.getUserUpdateRules())
 }
