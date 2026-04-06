@@ -37,6 +37,10 @@ type CreateUser struct {
 	Password     string `json:"password" db:"password"`
 }
 
+type SuccessfulLoginResponse struct {
+	BearerToken string `json:"bearerToken"`
+}
+
 type UpdateUser struct {
 	model.BaseModel
 	Name string `json:"name" db:"name"`
@@ -68,4 +72,12 @@ func (u *User) ValidateCreate() req.ErrMsgs {
 
 func (u *User) ValidateUpdate() req.ErrMsgs {
 	return validator.RunValidation(u.getUserUpdateRules())
+}
+
+func (u *User) ValidateLogin() req.ErrMsgs {
+	return validator.RunValidation([]validator.Rule{
+		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet
+		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.EmailAddress("")}}, //nolint:govet
+		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},  //nolint:govet
+	})
 }

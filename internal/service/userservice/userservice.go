@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/doublehops/dh-go-framework/internal/model/usersession"
+	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/user"
@@ -119,6 +121,19 @@ func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) 
 	}
 
 	return nil
+}
+
+func (s *UserService) CreateUserSession(ctx context.Context, record *user.User) (*usersession.UserSession, error) {
+
+	us := usersessionservice.New(s.App, nil)
+	session, err := us.Create(ctx, record)
+	if err != nil {
+		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
+
+		return nil, err
+	}
+
+	return session, nil
 }
 
 func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, error) {
