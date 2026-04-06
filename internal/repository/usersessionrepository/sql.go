@@ -19,7 +19,7 @@ var insertRecordSQL = `INSERT INTO user_session (
 `
 
 var updateLastRequestSQL = `UPDATE user_session SET
-	last_request=NOW(),
+	last_request=:last_request,
 	updated_at=:updated_at
 	WHERE id=:id
 `
