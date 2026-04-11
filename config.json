@@ -9,8 +9,8 @@
   },
   "database": {
     "host": "ENV:MYSQL_HOST",
-    "name": "dhapi",
-    "user": "dev",
-    "password": "pass12"
+    "name": "ENV:MYSQL_DATABASE",
+    "user": "ENV:MYSQL_USER",
+    "password": "ENV:MYSQL_PASSWORD"
   }
 }

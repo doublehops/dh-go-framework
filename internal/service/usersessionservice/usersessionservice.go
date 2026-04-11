@@ -15,6 +15,8 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
+const sessionTimeout = 24 * time.Hour
+
 type UserSessionService struct {
 	*service.App
 	sessionRepo *usersessionrepository.Repo
@@ -160,4 +162,8 @@ func generateToken(nbytes int) (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func (s *UserSessionService) HasExpired(us *usersession.UserSession) bool {
+	return us.LastRequest.Add(sessionTimeout).Before(time.Now())
 }

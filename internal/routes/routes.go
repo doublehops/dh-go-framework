@@ -7,17 +7,22 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/handlers/user"
 	"github.com/doublehops/dh-go-framework/internal/middleware"
 	"github.com/doublehops/dh-go-framework/internal/service"
+	"github.com/julienschmidt/httprouter"
 	group "github.com/mythrnr/httprouter-group"
 	// "github.com/doublehops/dh-go-framework/internal/handlers/mynewtable"
 )
 
 func GetV1Routes(app *service.App) *group.RouteGroup {
+	authMW := func(next httprouter.Handle) httprouter.Handle {
+		return middleware.AuthMiddleware(app, next)
+	}
+
 	healthHandle := health.New(app)
 	healthGroup := group.New("/health").GET(healthHandle.Check)
 
 	authorHandle := author.New(app)
 	authorGroup := group.New("/author")
-	authorGroup.GET(authorHandle.GetAll).Middleware(middleware.AuthMiddleware)
+	authorGroup.GET(authorHandle.GetAll).Middleware(authMW)
 	authorGroup.Children(
 		group.New("/:id").GET(authorHandle.GetByID),
 		group.New("").POST(authorHandle.Create),
@@ -28,7 +33,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	userHandle := user.New(app)
 
 	userGroup := group.New("/user")
-	userGroup.GET(userHandle.GetAll).Middleware(middleware.AuthMiddleware)
+	userGroup.GET(userHandle.GetAll).Middleware(authMW)
 	userGroup.Children(
 		group.New("/:id").GET(userHandle.GetByID),
 		group.New("").POST(userHandle.Create),
@@ -48,7 +53,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	// myNewTableHandle := mynewtable.New(app)
 	//
 	// myNewTableGroup := group.New("/my-new-table")
-	// myNewTableGroup.GET(myNewTableHandle.GetAll).Middleware(middleware.AuthMiddleware)
+	// myNewTableGroup.GET(myNewTableHandle.GetAll).Middleware(authMW)
 	// myNewTableGroup.Children(
 	// 	group.New("/:id").GET(myNewTableHandle.GetByID),
 	// 	group.New("").POST(myNewTableHandle.Create),
