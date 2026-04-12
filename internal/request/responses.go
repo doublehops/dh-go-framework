@@ -6,12 +6,13 @@ import (
 )
 
 var (
-	ErrValidation           = errors.New("one or more validation errors occurred")
-	ErrRecordNotFound       = errors.New("record not found")
-	ErrCouldNotSaveRecord   = errors.New("could not save record")
-	ErrCouldNotParseRequest = errors.New("could not parse request")
-	ErrProcessingRequest    = errors.New("there was an error processing the request")
-	ErrNotAuthorised        = errors.New("not authorised")
+	ErrValidation            = errors.New("one or more validation errors occurred")
+	ErrRecordNotFound        = errors.New("record not found")
+	ErrCouldNotSaveRecord    = errors.New("could not save record")
+	ErrCouldNotParseRequest  = errors.New("could not parse request")
+	ErrProcessingRequest     = errors.New("there was an error processing the request")
+	ErrBadUsernameOrPassword = errors.New("bad username or password")
+	ErrNotAuthorised         = errors.New("not authorised")
 
 	NotFoundMsg = ErrorMessage{"message": "not found"}
 )
@@ -24,7 +25,17 @@ func GetSingleItemResp(data interface{}) SingleItemResp {
 	}
 }
 
-func GeneralErrResp(msg string) GeneralErrorResp {
+func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
+	return GeneralErrorResp{
+		Name:    "there was an error processing request",
+		Message: msg,
+		Code:    statusCode,
+		Status:  "error",
+		Errors:  nil,
+	}
+}
+
+func ServerErrResp(msg string) GeneralErrorResp {
 	return GeneralErrorResp{
 		Name:    "there was an error processing request",
 		Message: msg,

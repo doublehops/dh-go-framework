@@ -82,7 +82,7 @@ const (
 	typeInt      columnType = "int"
 	typeString   columnType = "string"
 	typeBool     columnType = "bool"
-	typeDatetime columnType = "*datetime"
+	typeDatetime columnType = "*time.Time"
 )
 
 func New(pwd string, cfg Config, tableName string, db *sqlx.DB, logga *logga.Logga) *Scaffold {
@@ -122,7 +122,7 @@ func (s *Scaffold) Run() error {
 		Module:         moduleName,
 
 		ServiceFilename:    "service" + RemoveUnderscores(s.tableName) + ".go",
-		RepositoryFilename: "repository" + RemoveUnderscores(s.tableName) + ".go",
+		RepositoryFilename: RemoveUnderscores(s.tableName) + "repository.go",
 
 		ServiceName:    ToPascalCase(s.tableName) + "Service",
 		RepositoryName: ToPascalCase(s.tableName) + "Repository",

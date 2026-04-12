@@ -15,7 +15,7 @@ const (
 func (s *Scaffold) createRepository(ctx context.Context, m Model) error {
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.InsertFields, m.UpdateFields, m.ScanFields = s.getQueryFields(m.Columns)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.RepositoryName)
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Repository, m.LowerCase+"repository")
 	repositoryFilename := fmt.Sprintf("%s/%s.go", path, m.RepositoryFilename)
 	sqlFilename := fmt.Sprintf("%s/sql.go", path)
 
@@ -58,7 +58,7 @@ func (s *Scaffold) getQueryFields(cols []column) (string, string, string) {
 	var updateColumns []string
 
 	for _, f := range cols {
-		insertCol := fmt.Sprintf("model.%s", f.CapitalisedAbbr)
+		insertCol := fmt.Sprintf("record.%s", f.CapitalisedAbbr)
 		insertColumns = append(insertColumns, insertCol)
 
 		selectCol := fmt.Sprintf("&record.%s", f.CapitalisedAbbr)
@@ -68,11 +68,11 @@ func (s *Scaffold) getQueryFields(cols []column) (string, string, string) {
 		if f.Original == "id" {
 			continue
 		}
-		updateCol := fmt.Sprintf("model.%s", f.CapitalisedAbbr)
+		updateCol := fmt.Sprintf("record.%s", f.CapitalisedAbbr)
 		updateColumns = append(updateColumns, updateCol)
 	}
 
-	updateColumns = append(updateColumns, "model.ID")
+	updateColumns = append(updateColumns, "record.ID")
 
 	insertFields := strings.Join(insertColumns[1:], ", ")
 	updateFields := strings.Join(updateColumns, ", ")
@@ -98,8 +98,8 @@ func (s *Scaffold) setColumnSQLParams(m *Model) {
 		}
 
 		insertCols += fmt.Sprintf("\t%s,\n", col.Original)
-		insertQs += "?,\n"
-		updateStmt += fmt.Sprintf("\t%s=?,\n", col.Original)
+		insertQs += fmt.Sprintf("\t:%s,\n", col.Original)
+		updateStmt += fmt.Sprintf("\t%s=:%s,\n", col.Original, col.Original)
 	}
 
 	// Remove two last chars (comma and carriage return) of each string.

@@ -7,6 +7,13 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/model"
 )
 
+const (
+	UnableToSaveRecord        = "unable to save record"
+	UnableToUpdateRecord      = "unable to update record"
+	UnableToRetrieveRecord    = "unable to retrieve record"
+	UnableToCommitTransaction = "unable to commit transaction"
+)
+
 type App struct {
 	DB  *sqlx.DB
 	Log *logga.Logga

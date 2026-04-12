@@ -9,7 +9,7 @@ var insertRecordSQL = `INSERT INTO {{.Name}} (
 
 var updateRecordSQL = `UPDATE {{.Name}} SET
 {{.SQLUpdate}}
-	WHERE id=?
+	WHERE id=:id
 `
 
 var deleteRecordSQL = `UPDATE {{.Name}} SET

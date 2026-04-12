@@ -1,0 +1,58 @@
+package userrepository
+
+var insertRecordSQL = `INSERT INTO user (
+	organisation_id,
+	name,
+	email_address,
+	password,
+	is_active,
+	created_at,
+	updated_at,
+	deleted_at
+	  ) VALUES (
+	:organisation_id,
+	:name,
+	:email_address,
+	:password,
+	:is_active,
+	:created_at,
+	:updated_at,
+	:deleted_at
+	)
+`
+
+var updateRecordSQL = `UPDATE user SET
+	name=:name,
+	is_active=:is_active,
+	created_at=:created_at,
+	updated_at=:updated_at,
+	deleted_at=:deleted_at
+	WHERE id=:id
+`
+
+var deleteRecordSQL = `UPDATE user SET
+    updated_at=?,
+    deleted_at=?
+	WHERE id=?
+`
+
+var selectByIDQuery = `SELECT 
+	*
+    FROM user
+    WHERE id=?
+    AND deleted_at IS NULL`
+
+var selectByEmailAddressQuery = `SELECT 
+	*
+    FROM user
+    WHERE email_address=?`
+
+var selectCollectionQuery = `SELECT 
+	*
+    FROM user
+`
+
+var selectCollectionCountQuery = `SELECT 
+    COUNT(*) count
+    FROM user
+`

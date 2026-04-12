@@ -1,6 +1,6 @@
 {
   "host": {
-    "port": "8088"
+    "port": "ENV:PORT"
   },
   "logging": {
     "writer": "stdout",
@@ -8,9 +8,9 @@
     "outputFormat": "text"
   },
   "database": {
-    "host": "localhost",
-    "name": "dhapi",
-    "user": "dev",
-    "password": "pass12"
+    "host": "ENV:MYSQL_HOST",
+    "name": "ENV:MYSQL_DATABASE",
+    "user": "ENV:MYSQL_USER",
+    "password": "ENV:MYSQL_PASSWORD"
   }
 }

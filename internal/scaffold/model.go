@@ -48,7 +48,7 @@ func getStructProperties(columns []column) string {
 			continue
 		}
 
-		properties += fmt.Sprintf("%s %s `json:\"%s\"`\n", col.CapitalisedAbbr, col.Type, col.CamelCase)
+		properties += fmt.Sprintf("%s %s `json:\"%s\" db:\"%s\"`\n", col.CapitalisedAbbr, col.Type, col.CamelCase, col.Original)
 	}
 
 	return properties
@@ -83,7 +83,7 @@ func getRule(col column, m Model) string {
 	case "int":
 		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.IsInt(\"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
 	default:
-		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}} %s,\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
+		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}}, %s,\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
 	}
 
 	return rule
