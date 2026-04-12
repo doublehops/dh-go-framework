@@ -8,7 +8,6 @@ output:
   formats:
     text:
       path: stdout
-  sort-results: false
 
 # See: https://golangci-lint.run/usage/linters/
 linters:
