@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// MigrationRecord represents a row in the migrations tracking table.
 type MigrationRecord struct {
 	ID        int
 	Filename  string

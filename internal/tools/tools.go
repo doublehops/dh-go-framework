@@ -1,3 +1,4 @@
+// Package tools provides general utility functions used across the application.
 package tools
 
 import (

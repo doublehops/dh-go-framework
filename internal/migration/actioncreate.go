@@ -1,3 +1,4 @@
+// Package gomigration provides database migration management including creating, applying, and rolling back SQL migrations.
 package gomigration
 
 import (

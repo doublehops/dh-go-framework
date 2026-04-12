@@ -1,3 +1,4 @@
+// Package author provides HTTP handler functions for author resource endpoints.
 package author
 
 import (
@@ -16,12 +17,14 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
 )
 
+// Handle holds the dependencies for the author HTTP handler.
 type Handle struct {
 	repo *repositoryauthor.Author
 	srv  *authorservice.AuthorService
 	base *handlers.BaseHandler
 }
 
+// New creates a new author Handle with the required dependencies.
 func New(app *service.App) *Handle {
 	ar := repositoryauthor.New(app.Log)
 
@@ -34,6 +37,7 @@ func New(app *service.App) *Handle {
 	}
 }
 
+// Create handles POST /author requests to create a new author record.
 func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
 	h.srv.Log.Info(ctx, "Request made to CreateAuthor", nil)
@@ -62,6 +66,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 	h.base.WriteJSON(ctx, w, http.StatusCreated, req.GetSingleItemResp(a))
 }
 
+// UpdateByID handles PATCH /author/:id requests to update an existing author record.
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	userID := h.base.GetUser(ctx)
@@ -120,6 +125,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(a))
 }
 
+// DeleteByID handles DELETE /author/:id requests to soft-delete an author record.
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	userID := h.base.GetUser(ctx)
@@ -162,6 +168,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 	h.base.WriteJSON(ctx, w, http.StatusNoContent, nil)
 }
 
+// GetByID handles GET /author/:id requests to retrieve a single author record.
 func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	userID := h.base.GetUser(ctx)
@@ -222,6 +229,7 @@ func getSortableFields() []string {
 	}
 }
 
+// GetAll handles GET /author requests to retrieve a paginated collection of author records.
 func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
 	h.srv.Log.Info(ctx, "Request made to Get authors", nil)

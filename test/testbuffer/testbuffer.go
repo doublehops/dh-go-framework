@@ -1,3 +1,4 @@
+// Package testbuffer provides a file-backed io.Writer used to capture log output in tests.
 package testbuffer
 
 import (
@@ -5,8 +6,10 @@ import (
 	"os"
 )
 
+// Filename is the path to the temporary log file used by the test buffer.
 var Filename = "/tmp/testwriter.log"
 
+// TestBuffer implements io.Writer by writing log output to a temp file for test assertions.
 type TestBuffer struct{}
 
 func (tb TestBuffer) Read() ([]byte, error) {

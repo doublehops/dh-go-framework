@@ -1,3 +1,5 @@
+version: "2"
+
 # options for analysis running
 run:
 
@@ -30,27 +32,28 @@ linters:
     - dogsled
     - dupl
     - durationcheck
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
     - gochecknoinits
     - goconst
     - gocritic
-    - gofumpt
     - gosec
     - staticcheck
     - nilerr
     - nlreturn
     - predeclared
     - revive
-    - stylecheck
     - rowserrcheck
     - unconvert
     - wastedassign
 
   disable-all: false
   fast: false
+
+formatters:
+  enable:
+    - gofumpt
 
 linters-settings:
   gocritic:

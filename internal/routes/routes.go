@@ -1,3 +1,4 @@
+// Package routes registers and wires all API routes for the application.
 package routes
 
 import (
@@ -12,6 +13,7 @@ import (
 	// "github.com/doublehops/dh-go-framework/internal/handlers/mynewtable"
 )
 
+// GetV1Routes registers and returns all /v1 API routes for the application.
 func GetV1Routes(app *service.App) *group.RouteGroup {
 	authMW := func(next httprouter.Handle) httprouter.Handle {
 		return middleware.AuthMiddleware(app, next)

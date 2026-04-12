@@ -6,7 +6,9 @@ const (
 	stringNotInSlice = "value was not found in available items"
 )
 
-// nolint:cyclop
+// In returns a ValidationFuncs that checks the value is present within the provided slice.
+//
+//nolint:cyclop
 func In(slice []any, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {

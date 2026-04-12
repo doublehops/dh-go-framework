@@ -22,7 +22,7 @@ func (s *Scaffold) printRoutes(ctx context.Context, m Model) error {
 
 		return errors.New(e)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	source, err := io.ReadAll(f)
 	if err != nil {

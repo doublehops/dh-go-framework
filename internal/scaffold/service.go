@@ -10,7 +10,7 @@ const serviceTemplate = "./internal/scaffold/templates/service.tmpl"
 // createService will create the service.
 func (s *Scaffold) createService(ctx context.Context, m Model) error {
 	m.ModelStructProperties = getStructProperties(m.Columns)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Service, m.LowerCase+"service")
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Paths.Service, m.LowerCase+"service")
 	filename := fmt.Sprintf("%s/%sservice.go", path, m.LowerCase)
 
 	err := MkDir(path)

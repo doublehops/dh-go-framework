@@ -1,3 +1,4 @@
+// Package service provides shared service-level utilities and base types for business logic layers.
 package service
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/model"
 )
 
+// UnableToSaveRecord and related constants are common error message strings used across services.
 const (
 	UnableToSaveRecord        = "unable to save record"
 	UnableToUpdateRecord      = "unable to update record"
@@ -14,6 +16,7 @@ const (
 	UnableToCommitTransaction = "unable to commit transaction"
 )
 
+// App holds shared application dependencies (DB and logger) injected into all services.
 type App struct {
 	DB  *sqlx.DB
 	Log *logga.Logga

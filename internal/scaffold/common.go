@@ -1,3 +1,4 @@
+// Package scaffold provides code generation utilities for creating API handler, service, repository, and model files.
 package scaffold
 
 import (
@@ -82,8 +83,10 @@ func CapitaliseAbbr(str string) string {
 	return r.ReplaceAllString(str, "ID")
 }
 
+// Gofmt runs gofmt on the given file to format it.
 func Gofmt(filename string) error {
-	cmd := exec.Command("gofmt", "-w", filename)
+	cmd := exec.Command("gofmt", "-w", filename) //nolint:gosec
+
 	return cmd.Run()
 }
 
@@ -91,11 +94,11 @@ func Gofmt(filename string) error {
 func (s *Scaffold) writeFile(src, dest string, tmpl Model) error {
 	ctx := context.Background()
 
-	f, err := os.Open(src)
+	f, err := os.Open(src) //nolint:gosec
 	if err != nil {
 		return errors.New("unable to open template. " + err.Error())
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	source, err := io.ReadAll(f)
 	if err != nil {
@@ -105,7 +108,7 @@ func (s *Scaffold) writeFile(src, dest string, tmpl Model) error {
 		return errors.New(e)
 	}
 
-	f, err = os.Create(dest)
+	f, err = os.Create(dest) //nolint:gosec
 	if err != nil {
 		return errors.New("unable to open destination. " + err.Error())
 	}
@@ -131,7 +134,7 @@ func (s *Scaffold) writeFile(src, dest string, tmpl Model) error {
 
 // MkDir will recursively make the directory only if it doesn't already exist.
 func MkDir(path string) error {
-	err := os.MkdirAll(path, 0o755)
+	err := os.MkdirAll(path, 0o750)
 	if err != nil {
 		return err
 	}

@@ -1,3 +1,4 @@
+// Package user defines the User model, request/response types, and validation rules.
 package user
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/validator"
 )
 
+// User is the full database model for a user record.
 type User struct {
 	model.BaseModel
 	OrganisationID      int        `json:"organisationId" db:"organisation_id"`
@@ -21,6 +23,7 @@ type User struct {
 	IsActive            int        `json:"isActive" db:"is_active"`
 }
 
+// ResponseUser is a pruned user model for API responses, omitting sensitive fields.
 type ResponseUser struct {
 	model.BaseModel
 	OrganisationID int    `json:"organisationId"`
@@ -30,6 +33,7 @@ type ResponseUser struct {
 	IsActive       int    `json:"isActive"`
 }
 
+// CreateUser holds the fields required for creating a new user.
 type CreateUser struct {
 	model.BaseModel
 	Name         string `json:"name" db:"name"`
@@ -37,10 +41,12 @@ type CreateUser struct {
 	Password     string `json:"password" db:"password"`
 }
 
+// SuccessfulLoginResponse is the response payload returned after a successful login.
 type SuccessfulLoginResponse struct {
 	BearerToken string `json:"bearerToken"`
 }
 
+// UpdateUser holds the fields allowed when updating a user record.
 type UpdateUser struct {
 	model.BaseModel
 	Name string `json:"name" db:"name"`
@@ -61,14 +67,17 @@ func (u *User) getUserUpdateRules() []validator.Rule {
 	}
 }
 
+// ValidateCreate runs validation rules for user creation requests.
 func (u *User) ValidateCreate() req.ErrMsgs {
 	return validator.RunValidation(u.getUserCreateRules())
 }
 
+// ValidateUpdate runs validation rules for user update requests.
 func (u *User) ValidateUpdate() req.ErrMsgs {
 	return validator.RunValidation(u.getUserUpdateRules())
 }
 
+// ValidateLogin runs validation rules for login requests.
 func (u *User) ValidateLogin() req.ErrMsgs {
 	return validator.RunValidation([]validator.Rule{
 		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet

@@ -1,3 +1,4 @@
+// Package usersessionrepository handles database operations for user session records.
 package usersessionrepository
 
 var insertRecordSQL = `INSERT INTO user_session (
@@ -41,6 +42,7 @@ var selectByUserIDQuery = `SELECT
 	WHERE user_id=?
 	AND deleted_at IS NULL`
 
+//nolint:gosec
 var selectByTokenQuery = `SELECT
 	id, user_id, token, last_request, created_at, updated_at, deleted_at
 	FROM user_session

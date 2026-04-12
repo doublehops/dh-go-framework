@@ -1,9 +1,11 @@
+// Package usersession defines the UserSession model for authenticated user sessions.
 package usersession
 
 import (
 	"time"
 )
 
+// UserSession represents an authenticated user session with token and expiry tracking.
 type UserSession struct {
 	ID          int32      `json:"id" db:"id"`
 	UserID      int32      `json:"userId" db:"user_id"`

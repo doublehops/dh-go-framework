@@ -120,8 +120,9 @@ type logOutput struct {
 
 var basicMessage = "New log message"
 
+//nolint:funlen
 func TestSendLogMessage(t *testing.T) {
-	os.Remove(testbuffer.Filename)
+	_ = os.Remove(testbuffer.Filename)
 
 	tests := []struct {
 		name           string
@@ -189,7 +190,7 @@ func TestSendLogMessage(t *testing.T) {
 			for fileExists() {
 				time.Sleep(50 * time.Millisecond)
 			}
-			defer os.Remove(testbuffer.Filename)
+			defer func() { _ = os.Remove(testbuffer.Filename) }()
 
 			ctx := context.Background()
 

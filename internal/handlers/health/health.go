@@ -1,3 +1,4 @@
+// Package health provides the HTTP handler for the health check endpoint.
 package health
 
 import (
@@ -12,16 +13,19 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
 )
 
+// Response is the JSON response payload for the health check endpoint.
 type Response struct {
 	Status string `json:"status"`
 }
 
+// Handle holds dependencies for the health check handler.
 type Handle struct {
 	repo *repositoryauthor.Author
 	srv  *authorservice.AuthorService
 	base *handlers.BaseHandler
 }
 
+// New creates a new health check Handle.
 func New(app *service.App) *Handle {
 	ar := repositoryauthor.New(app.Log)
 
@@ -34,6 +38,7 @@ func New(app *service.App) *Handle {
 	}
 }
 
+// Check handles GET /health requests and returns a 200 OK status response.
 func (h *Handle) Check(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
 	h.srv.Log.Info(ctx, "Request made to health check", nil)

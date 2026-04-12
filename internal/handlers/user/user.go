@@ -1,3 +1,4 @@
+// Package user provides HTTP handler functions for user resource endpoints.
 package user
 
 import (
@@ -19,12 +20,14 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/tools"
 )
 
+// Handle holds the dependencies for the user HTTP handler.
 type Handle struct {
 	repo *userrepository.Repo
 	srv  *userservice.UserService
 	base *handlers.BaseHandler
 }
 
+// New creates a new user Handle with the required dependencies.
 func New(app *service.App) *Handle {
 	repo := userrepository.New(app.Log)
 
@@ -37,6 +40,7 @@ func New(app *service.App) *Handle {
 	}
 }
 
+// Create handles POST /user requests to create a new user record.
 func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var emailAddressExists bool
 	var err error
@@ -86,6 +90,7 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
+// GetResponse builds a ResponseUser from a full User record, omitting sensitive fields.
 func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.ResponseUser, error) {
 	userResponse := &model.ResponseUser{}
 	err := copier.Copy(&userResponse, &record)
@@ -98,6 +103,7 @@ func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.Re
 	return userResponse, nil
 }
 
+// GetCollectionResponse builds a slice of ResponseUser from a collection of User records.
 func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.User) ([]*model.ResponseUser, error) {
 	response := []*model.ResponseUser{}
 	for _, record := range records {
@@ -115,6 +121,7 @@ func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.Use
 	return response, nil
 }
 
+// UpdateByID handles PATCH /user/:id requests to update an existing user record.
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)
@@ -179,6 +186,7 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
+// DeleteByID handles DELETE /user/:id requests to soft-delete a user record.
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)
@@ -222,6 +230,7 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 	h.base.WriteJSON(ctx, w, http.StatusNoContent, nil)
 }
 
+// GetByID handles GET /user/:id requests to retrieve a single user record.
 func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
 	// userID := h.base.GetUser(ctx)

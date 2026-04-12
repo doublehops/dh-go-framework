@@ -15,7 +15,7 @@ func (s *Scaffold) createModel(ctx context.Context, m Model) error {
 	s.l.Info(ctx, ">>>>>>>> in createModel()", nil)
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.ValidationRules = s.getValidationRules(m)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Model, m.LowerCase)
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Paths.Model, m.LowerCase)
 	filename := fmt.Sprintf("%s/%s.go", path, m.LowerCase)
 
 	err := MkDir(path)

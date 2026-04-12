@@ -51,6 +51,7 @@ func (a *Action) getPendingMigrationFiles() ([]string, error) {
 		}
 		if file == lastRanMigration {
 			foundLastRan = true
+
 			continue
 		}
 		if !foundLastRan {
@@ -116,7 +117,7 @@ func (a *Action) parseMigrations(filesToParse []string) ([]File, error) {
 	for _, file := range filesToParse {
 
 		thisFile := File{Filename: file}
-		data, err := os.ReadFile(a.Path + "/" + file)
+		data, err := os.ReadFile(a.Path + "/" + file) //nolint:gosec
 		if err != nil {
 			return files, fmt.Errorf("unable to read file: %s. %s", file, err)
 		}
