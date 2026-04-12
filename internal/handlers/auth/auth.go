@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 
 	"github.com/doublehops/dh-go-framework/internal/handlers"
 	model "github.com/doublehops/dh-go-framework/internal/model/user"
+	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
