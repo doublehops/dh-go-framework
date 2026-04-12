@@ -167,3 +167,20 @@ func generateToken(nbytes int) (string, error) {
 func (s *UserSessionService) HasExpired(us *usersession.UserSession) bool {
 	return us.LastRequest.Add(sessionTimeout).Before(time.Now())
 }
+
+func (s *UserSessionService) SetLastRequestNow(ctx context.Context, record *usersession.UserSession) error {
+	tx := s.DB.MustBegin()
+	defer tx.Rollback() // nolint: errcheck
+
+	err := s.sessionRepo.SetLastRequestNow(ctx, s.DB, record)
+	if err != nil {
+		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		s.Log.Error(ctx, "unable to commit transaction"+err.Error(), nil)
+	}
+
+	return nil
+}

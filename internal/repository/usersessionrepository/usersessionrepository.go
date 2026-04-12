@@ -120,3 +120,18 @@ func (r *Repo) GetCollection(ctx context.Context, DB *sqlx.DB, p *req.Request) (
 
 	return records, nil
 }
+
+func (r *Repo) SetLastRequestNow(ctx context.Context, DB *sqlx.DB, record *usersession.UserSession) error {
+	var (
+		err error
+	)
+
+	_, err = DB.NamedExec(updateLastRequestSQL, record)
+	if err != nil {
+		r.l.Error(ctx, "SetLastRequestNow()", logga.KVPs{"err": err})
+
+		return err
+	}
+
+	return nil
+}

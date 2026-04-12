@@ -50,6 +50,9 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 			return
 		}
 
+		err = ss.SetLastRequestNow(r.Context(), record)
+		// TODO - handle error
+
 		r = r.WithContext(context.WithValue(r.Context(), apppackage.UserIDKey, record.UserID))
 		log.Println(">>>>> middleware")
 		next(w, r, ps)
