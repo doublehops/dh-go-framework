@@ -55,7 +55,7 @@ formatters:
   enable:
     - gofumpt
 
-linters-settings:
+linters.settings:
   gocritic:
     enabled-checks:
       - sloppyReassign
