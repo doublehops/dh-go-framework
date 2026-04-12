@@ -6,7 +6,8 @@ run:
 
 output:
   formats:
-    - format: colored-line-number
+    text:
+      path: stdout
   sort-results: false
 
 # See: https://golangci-lint.run/usage/linters/
@@ -50,9 +51,9 @@ linters:
       block-size: 2
     forbidigo:
       forbid:
-        - ^print.*$
-        - 'fmt\.Print.*'
-        - 'ioutil\.*'
+        - pattern: '^print.*$'
+        - pattern: 'fmt\.Print.*'
+        - pattern: 'ioutil\.*'
     funlen:
       lines: 120
     gosec:
