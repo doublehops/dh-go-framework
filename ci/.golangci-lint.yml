@@ -47,6 +47,18 @@ linters:
     - rowserrcheck
     - unconvert
     - wastedassign
+  settings:
+    gocritic:
+      enabled-checks:
+        - sloppyReassign
+        - nestingReduce
+        - httpNoBody
+        - badLock
+        - paramTypeCombine
+        - equalFold
+        - appendCombine
+        - nilValReturn
+        - weakCond
 
   disable-all: false
   fast: false
@@ -55,18 +67,6 @@ formatters:
   enable:
     - gofumpt
 
-linters.settings:
-  gocritic:
-    enabled-checks:
-      - sloppyReassign
-      - nestingReduce
-      - httpNoBody
-      - badLock
-      - paramTypeCombine
-      - equalFold
-      - appendCombine
-      - nilValReturn
-      - weakCond
 
   nlreturn:
     # size of the block (including return statement that is still "OK") so no return split required.
