@@ -1,24 +1,13 @@
-# options for analysis running
+version: "2"
+
 run:
-
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
-
-  # include test files or not, default is true
   tests: true
 
-  # Skip default dirs
-  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
-  skip-dirs-use-default: true
-
-# output configuration options
 output:
-  # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
-  # default is "colored-line-number"
-  format: colored-line-number
-
-  # sorts results by: filepath, line and column
-  sort-results: false
+  formats:
+    text:
+      path: stdout
 
 # See: https://golangci-lint.run/usage/linters/
 linters:
@@ -30,55 +19,46 @@ linters:
     - dogsled
     - dupl
     - durationcheck
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
     - gochecknoinits
     - goconst
     - gocritic
-    - gofumpt
     - gosec
     - staticcheck
     - nilerr
     - nlreturn
     - predeclared
     - revive
-    - stylecheck
     - rowserrcheck
     - unconvert
     - wastedassign
+  settings:
+    gocritic:
+      enabled-checks:
+        - sloppyReassign
+        - nestingReduce
+        - httpNoBody
+        - badLock
+        - paramTypeCombine
+        - equalFold
+        - appendCombine
+        - nilValReturn
+        - weakCond
+    nlreturn:
+      block-size: 2
+    forbidigo:
+      forbid:
+        - pattern: '^print.*$'
+        - pattern: 'fmt\.Print.*'
+        - pattern: 'ioutil\.*'
+    funlen:
+      lines: 120
+    gosec:
+      excludes:
+        - G101
 
-  disable-all: false
-  fast: false
-
-linters-settings:
-  gocritic:
-    enabled-checks:
-      - sloppyReassign
-      - nestingReduce
-      - httpNoBody
-      - badLock
-      - paramTypeCombine
-      - equalFold
-      - appendCombine
-      - nilValReturn
-      - weakCond
-
-  nlreturn:
-    # size of the block (including return statement that is still "OK") so no return split required.
-    block-size: 2
-
-  forbidigo:
-    forbid:
-      - ^print.*$
-      - 'fmt\.Print.*'
-      - 'ioutil\.*'
-
-  funlen:
-    # Double the default because test data and logging makes things awful
-    lines: 120
-
-  gosec:
-    excludes:
-      - G101
+formatters:
+  enable:
+    - gofumpt

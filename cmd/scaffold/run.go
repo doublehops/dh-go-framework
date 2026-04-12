@@ -1,8 +1,10 @@
+// Package main is the entry point for the scaffold code generation tool.
 package main
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -63,7 +65,7 @@ func run() error {
 		errMsg := fmt.Sprintf("error creating database connection. %s", err.Error())
 		l.Error(ctx, errMsg, nil)
 
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	scf, err := GetScaffoldConfig(pwd)
@@ -71,7 +73,7 @@ func run() error {
 		errMsg := fmt.Sprintf("error getting scaffold config. %s", err.Error())
 		l.Error(ctx, errMsg, nil)
 
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	s := scaffold.New(pwd, scf, tableName, DB, l)
@@ -89,7 +91,7 @@ func GetScaffoldConfig(pwd string) (scaffold.Config, error) {
 
 	relPath := pwd + "/cmd/scaffold/config.json"
 
-	f, err := os.ReadFile(relPath)
+	f, err := os.ReadFile(relPath) //nolint:gosec
 	if err != nil {
 		log.Printf("unable to read config file - %s. %s", relPath, err.Error())
 

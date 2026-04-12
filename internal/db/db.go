@@ -1,3 +1,4 @@
+// Package db provides database connection setup and management.
 package db
 
 import (
@@ -16,6 +17,7 @@ const (
 	delay       = 5
 )
 
+// New creates and returns a new database connection, retrying up to maxAttempts times.
 func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 	l.Log.Info("opening database connection")
 

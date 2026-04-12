@@ -12,19 +12,19 @@ type countRes struct {
 
 // GetRecordCount will retrieve the number of records for a given query for pagination responses.
 // The function expects only one column in the query. An example would be `SELECT COUNT(*) count FROM {table}1`.
-func GetRecordCount(DB *sqlx.DB, q string, params []any) (int32, error) {
+func GetRecordCount(db *sqlx.DB, q string, params []any) (int32, error) {
 	var (
 		err error
 		// row *sql.Rows
 		c countRes
 	)
 	if params == nil {
-		err = DB.Get(&c, q)
+		err = db.Get(&c, q)
 		if err != nil {
 			return c.Count, fmt.Errorf("unable to run query. %s", err)
 		}
 	} else {
-		err = DB.Get(&c, q, params...)
+		err = db.Get(&c, q, params...)
 		if err != nil {
 			return c.Count, fmt.Errorf("unable to fetch row. %s", err)
 		}

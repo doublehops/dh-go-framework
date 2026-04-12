@@ -1,3 +1,4 @@
+// Package model provides the base model types and interfaces shared by all resource models.
 package model
 
 import (
@@ -8,11 +9,13 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/app"
 )
 
+// Model is the interface that all resource models must implement for permission and audit support.
 type Model interface {
 	GetUserID() int32
 	SetCreated(context.Context) error
 }
 
+// BaseModel is embedded in all resource models and provides standard audit fields.
 type BaseModel struct {
 	ID        int32      `json:"id" db:"id"`
 	UserID    int32      `json:"userId" db:"user_id"`
@@ -23,11 +26,12 @@ type BaseModel struct {
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
-// Deprecated - remove
+// GetUserID returns the UserID field. Deprecated: to be removed.
 func (bm *BaseModel) GetUserID() int32 {
 	return bm.UserID
 }
 
+// SetCreated initialises the audit fields from the request context when creating a new record.
 func (bm *BaseModel) SetCreated(ctx context.Context) error {
 	userID := ctx.Value(app.UserIDKey)
 	if userID != nil {
@@ -49,6 +53,7 @@ func (bm *BaseModel) SetCreated(ctx context.Context) error {
 	return nil
 }
 
+// SetUpdated updates the UpdatedBy and UpdatedAt fields from context and current time.
 func (bm *BaseModel) SetUpdated(ctx context.Context) {
 	userID := bm.getRequestUserID(ctx)
 	if userID > 0 {
@@ -60,6 +65,7 @@ func (bm *BaseModel) SetUpdated(ctx context.Context) {
 	bm.UpdatedAt = &t
 }
 
+// SetDeleted sets the DeletedAt and UpdatedAt timestamps to mark the record as soft-deleted.
 func (bm *BaseModel) SetDeleted(ctx context.Context) {
 	userID := bm.getRequestUserID(ctx)
 	if userID > 0 {

@@ -1,5 +1,6 @@
 package validator
 
+// MinValueDefaultMessage and related constants are default error messages for integer validation functions.
 const (
 	MinValueDefaultMessage = "is below required amount"
 	MaxValueDefaultMessage = "is above required amount"
@@ -7,6 +8,7 @@ const (
 	NotIntegerMessage      = "is not an integer"
 )
 
+// MinValue returns a ValidationFuncs that checks the value is at or above a minimum integer.
 func MinValue(minValue int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
@@ -34,6 +36,7 @@ func MinValue(minValue int, errorMessage string) ValidationFuncs {
 	}
 }
 
+// MaxValue returns a ValidationFuncs that checks the value does not exceed a maximum integer.
 func MaxValue(maxValue int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
@@ -61,6 +64,7 @@ func MaxValue(maxValue int, errorMessage string) ValidationFuncs {
 	}
 }
 
+// IntInRange returns a ValidationFuncs that checks the value is within a min/max integer range.
 func IntInRange(minValue, maxValue int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
@@ -88,6 +92,7 @@ func IntInRange(minValue, maxValue int, errorMessage string) ValidationFuncs {
 	}
 }
 
+// IsInt returns a ValidationFuncs that checks whether the value is an integer.
 func IsInt(errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {

@@ -1,3 +1,4 @@
+// Package httprequest provides an HTTP client helper for making outbound API requests.
 package httprequest
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/logga"
 )
 
+// Requester holds the HTTP client configuration including host and logger.
 type Requester struct {
 	Log  *logga.Logga
 	Host string
@@ -21,6 +23,7 @@ type Requester struct {
 // 	testHost = "http://localhost:8088/"
 // )
 
+// GetRequester creates and returns a configured Requester for the given host.
 func GetRequester(host string) (Requester, error) {
 	logg := &config.Logging{
 		Writer:       "stdout",
@@ -40,6 +43,7 @@ func GetRequester(host string) (Requester, error) {
 	return req, nil
 }
 
+// MakeRequest sends an HTTP request with optional query params and JSON payload, returning the status and body.
 func (r *Requester) MakeRequest(ctx context.Context, method, path string, params map[string]string, payload any) (string, []byte, error) {
 	client := &http.Client{}
 	var p io.Reader
@@ -82,7 +86,7 @@ func (r *Requester) MakeRequest(ctx context.Context, method, path string, params
 
 		return "", nil, errMsg
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	statusCode := resp.Status
 	respBody, _ := io.ReadAll(resp.Body)

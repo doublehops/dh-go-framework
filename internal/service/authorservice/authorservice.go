@@ -1,3 +1,4 @@
+// Package authorservice provides business logic for author management.
 package authorservice
 
 import (
@@ -15,11 +16,13 @@ import (
 // 	unableToCommitTransaction = "unable to commit transaction"
 // )
 
+// AuthorService handles business logic for author management.
 type AuthorService struct {
 	*service.App
 	authorRepo *repositoryauthor.Author
 }
 
+// New creates a new AuthorService with the provided app and author repository.
 func New(app *service.App, authorRepo *repositoryauthor.Author) *AuthorService {
 	return &AuthorService{
 		App:        app,
@@ -27,6 +30,7 @@ func New(app *service.App, authorRepo *repositoryauthor.Author) *AuthorService {
 	}
 }
 
+// Create persists a new author record.
 func (s AuthorService) Create(ctx context.Context, record *author.Author) (*author.Author, error) {
 	if err := record.SetCreated(ctx); err != nil {
 		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
@@ -56,6 +60,7 @@ func (s AuthorService) Create(ctx context.Context, record *author.Author) (*auth
 	return a, nil
 }
 
+// Update saves changes to an existing author record.
 func (s AuthorService) Update(ctx context.Context, record *author.Author) (*author.Author, error) {
 	record.SetUpdated(ctx)
 
@@ -81,6 +86,7 @@ func (s AuthorService) Update(ctx context.Context, record *author.Author) (*auth
 	return a, nil
 }
 
+// DeleteByID soft-deletes an author record.
 func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) error {
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
@@ -100,8 +106,9 @@ func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) er
 	return nil
 }
 
-func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID int32) error {
-	err := s.authorRepo.GetByID(ctx, s.DB, ID, record)
+// GetByID retrieves an author record by its ID.
+func (s AuthorService) GetByID(ctx context.Context, record *author.Author, id int32) error {
+	err := s.authorRepo.GetByID(ctx, s.DB, id, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
@@ -109,6 +116,7 @@ func (s AuthorService) GetByID(ctx context.Context, record *author.Author, ID in
 	return nil
 }
 
+// GetAll retrieves a paginated collection of author records.
 func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
 	records, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {

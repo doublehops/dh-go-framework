@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware functions for authentication and request processing.
 package middleware
 
 import (
@@ -50,8 +51,8 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 			return
 		}
 
-		err = ss.SetLastRequestNow(r.Context(), record)
 		// TODO - handle error
+		_ = ss.SetLastRequestNow(r.Context(), record)
 
 		r = r.WithContext(context.WithValue(r.Context(), apppackage.UserIDKey, record.UserID))
 		log.Println(">>>>> middleware")

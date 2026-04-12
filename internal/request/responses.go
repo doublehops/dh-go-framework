@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// ErrValidation and related vars are standard error values used in API response helpers.
 var (
 	ErrValidation            = errors.New("one or more validation errors occurred")
 	ErrRecordNotFound        = errors.New("record not found")
@@ -17,14 +18,17 @@ var (
 	NotFoundMsg = ErrorMessage{"message": "not found"}
 )
 
+// ErrorMessage is a map of field names to error message strings for API error responses.
 type ErrorMessage map[string]string
 
+// GetSingleItemResp wraps a single data item in a standard response envelope.
 func GetSingleItemResp(data interface{}) SingleItemResp {
 	return SingleItemResp{
 		Data: data,
 	}
 }
 
+// GeneralErrResp builds a general error response with the provided message and HTTP status code.
 func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
 	return GeneralErrorResp{
 		Name:    "there was an error processing request",
@@ -35,6 +39,7 @@ func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
 	}
 }
 
+// ServerErrResp builds a 500 internal server error response.
 func ServerErrResp(msg string) GeneralErrorResp {
 	return GeneralErrorResp{
 		Name:    "there was an error processing request",
@@ -45,6 +50,7 @@ func ServerErrResp(msg string) GeneralErrorResp {
 	}
 }
 
+// GetNotAuthorisedResp builds a 403 forbidden response.
 func GetNotAuthorisedResp() GeneralErrorResp {
 	return GeneralErrorResp{
 		Name:    "there was an error processing request",
@@ -66,6 +72,7 @@ func GetNotFoundResp() GeneralErrorResp {
 	}
 }
 
+// GetListResp wraps a collection and its pagination metadata in a standard response envelope.
 func GetListResp(data interface{}, pagination *Request) CollResp {
 	return CollResp{
 		Data:    data,

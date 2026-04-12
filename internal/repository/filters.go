@@ -1,3 +1,4 @@
+// Package repository provides shared database query building utilities.
 package repository
 
 import (
@@ -9,17 +10,21 @@ import (
 	req "github.com/doublehops/dh-go-framework/internal/request"
 )
 
+// Filter holds query ordering parameters for repository queries.
 type Filter struct {
 	Order Order
 }
 
+// Order is the sort direction type for query results.
 type Order string
 
+// ASC and DESC are the supported sort order directions.
 const (
 	ASC  Order = "ASC"
 	DESC Order = "DESC"
 )
 
+// BuildQuery constructs a SQL query string with filters, sorting, and pagination applied.
 func BuildQuery(query string, p *req.Request, getCount bool) (string, []any) {
 	var pParams []any
 

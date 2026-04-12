@@ -1,3 +1,4 @@
+// Package testserver provides a test HTTP server for integration tests.
 package testserver
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
+// RunTestServer starts a test HTTP server using the test config for integration tests.
 func RunTestServer() error {
 	ctx := context.Background()
 

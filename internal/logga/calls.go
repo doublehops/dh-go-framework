@@ -1,3 +1,4 @@
+// Package logga provides a structured, context-aware logging wrapper around slog.
 package logga
 
 import (
@@ -9,51 +10,51 @@ import (
 )
 
 // Debug - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
-func (l *Logga) Debug(ctx context.Context, msg string, KVP KVPs) {
-	if KVP == nil {
-		KVP = KVPs{}
+func (l *Logga) Debug(ctx context.Context, msg string, kvp KVPs) {
+	if kvp == nil {
+		kvp = KVPs{}
 	}
-	KVP["func"] = tools.CurrentFunction()
-	l.Log.DebugContext(ctx, msg, addArgs(ctx, KVP)...)
+	kvp["func"] = tools.CurrentFunction()
+	l.Log.DebugContext(ctx, msg, addArgs(ctx, kvp)...)
 }
 
 // Info - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
-func (l *Logga) Info(ctx context.Context, msg string, KVP KVPs) {
-	if KVP == nil {
-		KVP = KVPs{}
+func (l *Logga) Info(ctx context.Context, msg string, kvp KVPs) {
+	if kvp == nil {
+		kvp = KVPs{}
 	}
-	KVP["func"] = tools.CurrentFunction()
-	l.Log.InfoContext(ctx, msg, addArgs(ctx, KVP)...)
+	kvp["func"] = tools.CurrentFunction()
+	l.Log.InfoContext(ctx, msg, addArgs(ctx, kvp)...)
 }
 
 // Warn - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
-func (l *Logga) Warn(ctx context.Context, msg string, KVP KVPs) {
-	if KVP == nil {
-		KVP = KVPs{}
+func (l *Logga) Warn(ctx context.Context, msg string, kvp KVPs) {
+	if kvp == nil {
+		kvp = KVPs{}
 	}
-	KVP["func"] = tools.CurrentFunction()
-	l.Log.WarnContext(ctx, msg, addArgs(ctx, KVP)...)
+	kvp["func"] = tools.CurrentFunction()
+	l.Log.WarnContext(ctx, msg, addArgs(ctx, kvp)...)
 }
 
 // Error - args should be key/value pairs separated by a space. Example: "file", "migrate.go"
-func (l *Logga) Error(ctx context.Context, msg string, KVP KVPs) {
-	if KVP == nil {
-		KVP = KVPs{}
+func (l *Logga) Error(ctx context.Context, msg string, kvp KVPs) {
+	if kvp == nil {
+		kvp = KVPs{}
 	}
-	KVP["func"] = tools.CurrentFunction()
-	l.Log.ErrorContext(ctx, msg, addArgs(ctx, KVP)...)
+	kvp["func"] = tools.CurrentFunction()
+	l.Log.ErrorContext(ctx, msg, addArgs(ctx, kvp)...)
 }
 
 // addArgs will add arguments as slog.Int, slog.String, slog.Any, etc...
-func addArgs(ctx context.Context, KVPs KVPs) []any {
+func addArgs(ctx context.Context, kvps KVPs) []any {
 	var atts []any
 
 	ctxArgs := getContextKVPs(ctx)
 	for key, value := range ctxArgs {
-		KVPs[key] = value
+		kvps[key] = value
 	}
 
-	for key, value := range KVPs {
+	for key, value := range kvps {
 		atts = append(atts, slog.Any(key, value))
 	}
 

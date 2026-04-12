@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 
 const goModuleFile = "./go.mod"
 
+// Scaffold orchestrates code generation for a given database table.
 type Scaffold struct {
 	DB  *sqlx.DB
 	l   *logga.Logga
@@ -25,10 +25,12 @@ type Scaffold struct {
 	Config
 }
 
+// Config holds the path configuration used by the scaffolding tool.
 type Config struct {
 	Paths Paths `json:"paths"`
 }
 
+// Paths defines the output directories for each generated layer.
 type Paths struct {
 	Handlers   string `json:"handlers"`
 	Model      string `json:"model"`
@@ -36,6 +38,7 @@ type Paths struct {
 	Service    string `json:"service"`
 }
 
+// Model holds the template data used when rendering scaffold templates.
 type Model struct {
 	Name           string
 	FirstInitial   string
@@ -85,6 +88,7 @@ const (
 	typeDatetime columnType = "*time.Time"
 )
 
+// New creates a new Scaffold for the given table, using the provided config and dependencies.
 func New(pwd string, cfg Config, tableName string, db *sqlx.DB, logga *logga.Logga) *Scaffold {
 	return &Scaffold{
 		pwd:       pwd,
@@ -95,18 +99,23 @@ func New(pwd string, cfg Config, tableName string, db *sqlx.DB, logga *logga.Log
 	}
 }
 
+// Run generates the handler, model, repository, service, and route template files.
+//
+//nolint:funlen
 func (s *Scaffold) Run() error {
 	ctx := context.Background()
 
 	columns, err := s.getTableDefinition()
 	if err != nil {
 		s.l.Error(ctx, "error getting column. "+err.Error(), nil)
+
 		return errors.New("failed to run. " + err.Error())
 	}
 
 	moduleName, err := getModuleName()
 	if err != nil {
 		s.l.Error(ctx, err.Error(), nil)
+
 		return errors.New("failed to run. " + err.Error())
 	}
 
@@ -180,6 +189,7 @@ func getModuleName() (string, error) {
 	return module, nil
 }
 
+// ColumnDefinition holds the name and type information for a single database column.
 type ColumnDefinition struct {
 	columnName string
 	columnType string
@@ -197,7 +207,7 @@ func (s *Scaffold) getTableDefinition() ([]ColumnDefinition, error) {
 	if rows.Err() != nil {
 		return cols, errors.New("error in rows.Err(). " + err.Error())
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	columns, err := rows.Columns()
 	if err != nil {
@@ -212,9 +222,8 @@ func (s *Scaffold) getTableDefinition() ([]ColumnDefinition, error) {
 			valuePtrs[i] = &values[i]
 		}
 
-		err := rows.Scan(valuePtrs...)
-		if err != nil {
-			log.Fatal(err)
+		if err := rows.Scan(valuePtrs...); err != nil {
+			return nil, err
 		}
 
 		columnName := fmt.Sprintf("%s", values[0])

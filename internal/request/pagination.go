@@ -50,6 +50,7 @@ func getFilterParams(_ context.Context, query url.Values, filters []FilterRule) 
 
 		if f.Type == FilterIsNull {
 			newFilters = append(newFilters, f)
+
 			continue
 		}
 

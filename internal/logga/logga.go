@@ -10,15 +10,18 @@ import (
 	"github.com/doublehops/dh-go-framework/test/testbuffer"
 )
 
+// ErrInvalidLogWriter and ErrInvalidLogLevelValue are errors returned when the logger config is invalid.
 var (
 	ErrInvalidLogWriter     = errors.New("a valid writer was not defined in configuration")
 	ErrInvalidLogLevelValue = errors.New("a valid log level was not defined in configuration")
 )
 
+// Logga wraps slog.Logger to provide structured, context-aware logging.
 type Logga struct {
 	Log *slog.Logger
 }
 
+// KVPs is a map of key-value pairs passed as extra context to log calls.
 type KVPs map[string]any
 
 // New will return the log handler with the options defined in config.

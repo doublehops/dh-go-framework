@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestMinValue(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -83,7 +83,7 @@ func TestMinValue(t *testing.T) {
 	}
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestMaxValue(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -160,7 +160,7 @@ func TestMaxValue(t *testing.T) {
 	}
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestIntInRange(t *testing.T) {
 	tests := []struct {
 		name           string

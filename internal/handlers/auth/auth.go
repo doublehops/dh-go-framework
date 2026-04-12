@@ -1,3 +1,4 @@
+// Package auth provides HTTP handler functions for authentication endpoints.
 package auth
 
 import (
@@ -18,10 +19,12 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/tools"
 )
 
+// TokenValidPeriod is the duration after which an authentication session token expires.
 const (
 	TokenValidPeriod = 24 * time.Hour
 )
 
+// Handle holds the dependencies for the auth handler.
 type Handle struct {
 	app  *service.App
 	repo *userrepository.Repo
@@ -29,6 +32,7 @@ type Handle struct {
 	base *handlers.BaseHandler
 }
 
+// New creates a new auth Handle with the required dependencies.
 func New(app *service.App) *Handle {
 	repo := userrepository.New(app.Log)
 
@@ -42,6 +46,7 @@ func New(app *service.App) *Handle {
 	}
 }
 
+// Login handles POST /auth/login requests, authenticating the user and returning a session token.
 func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var err error
 	ctx := r.Context()
@@ -69,7 +74,7 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	if passwordValid := h.srv.CheckPasswordHash(record.Password, user.Password); passwordValid == false {
+	if passwordValid := h.srv.CheckPasswordHash(record.Password, user.Password); !passwordValid {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.ServerErrResp(req.ErrBadUsernameOrPassword.Error()))
 
 		return
@@ -104,7 +109,8 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 // 	return userResponse, nil
 // }
 
-func (h *Handle) GetResponse(ctx context.Context, record *usersession.UserSession) (*model.SuccessfulLoginResponse, error) {
+// GetResponse builds the successful login response payload from the user session record.
+func (h *Handle) GetResponse(_ context.Context, record *usersession.UserSession) (*model.SuccessfulLoginResponse, error) {
 	response := &model.SuccessfulLoginResponse{
 		BearerToken: record.Token,
 	}

@@ -1,3 +1,4 @@
+// Package config provides application configuration loading and environment variable resolution.
 package config
 
 import (
@@ -12,27 +13,32 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds the full application configuration loaded from a JSON file.
 type Config struct {
 	Host    Host    `json:"host"`
 	Logging Logging `json:"logging"`
 	DB      DB      `json:"database"`
 }
 
+// Host holds server host configuration.
 type Host struct {
 	Port    string `json:"port"`
 	TestURL string `json:"testUrl"`
 }
 
+// Aggregator holds aggregator configuration.
 type Aggregator struct {
 	Name string `json:"name"`
 }
 
+// Logging holds log output configuration.
 type Logging struct {
 	Writer       string
 	LogLevel     string `json:"logLevel"`
 	OutputFormat string `json:"outputFormat"`
 }
 
+// DB holds database connection configuration.
 type DB struct {
 	User string `json:"user"`
 	Pass string `json:"password"`
@@ -40,6 +46,7 @@ type DB struct {
 	Name string `json:"name"`
 }
 
+// New loads and returns a Config from the given JSON file path.
 func New(configFile string) (*Config, error) {
 	log.Printf("Loading config from file: %s", configFile)
 
@@ -56,7 +63,7 @@ func New(configFile string) (*Config, error) {
 		relPath = pwd + "/../../../" + configFile // test path.
 	}
 
-	f, err := os.ReadFile(relPath)
+	f, err := os.ReadFile(relPath) //nolint:gosec
 	if err != nil {
 		log.Printf("unable to read config file - %s. %s", relPath, err.Error())
 
@@ -98,7 +105,7 @@ func resolveEnvInStruct(s interface{}) {
 				if envVal, ok := os.LookupEnv(envKey); ok {
 					field.SetString(envVal)
 				} else {
-					fmt.Printf("Warning: env var %s not set\n", envKey)
+					log.Printf("Warning: env var %s not set\n", envKey)
 				}
 			}
 		case reflect.Struct:

@@ -11,7 +11,7 @@ const handlerTemplate = "./internal/scaffold/templates/handler.tmpl"
 func (s *Scaffold) createHandler(ctx context.Context, m Model) error {
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.ValidationRules = s.getValidationRules(m)
-	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Config.Paths.Handlers, m.LowerCase)
+	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Paths.Handlers, m.LowerCase)
 	filename := fmt.Sprintf("%s/%s.go", path, m.LowerCase)
 
 	err := MkDir(path)

@@ -1,11 +1,13 @@
 package validator
 
+// MinLengthDefaultMessage and related constants are default error messages for string length validation.
 const (
 	MinLengthDefaultMessage     = "is below minimum required length"
 	MaxLengthDefaultMessage     = "exceeds maximum length"
 	BetweenLengthDefaultMessage = "length is not within required range"
 )
 
+// MinLength returns a ValidationFuncs that checks the string meets a minimum length requirement.
 func MinLength(minLength int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
@@ -35,6 +37,7 @@ func MinLength(minLength int, errorMessage string) ValidationFuncs {
 	}
 }
 
+// MaxLength returns a ValidationFuncs that checks the string does not exceed a maximum length.
 func MaxLength(maxLength int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {
@@ -64,6 +67,7 @@ func MaxLength(maxLength int, errorMessage string) ValidationFuncs {
 	}
 }
 
+// LengthInRange returns a ValidationFuncs that checks the string length is within a min/max range.
 func LengthInRange(minLength, maxLength int, errorMessage string) ValidationFuncs {
 	return func(required bool, value interface{}) (bool, string) {
 		if errorMessage == "" {

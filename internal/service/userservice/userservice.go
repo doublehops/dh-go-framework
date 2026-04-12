@@ -1,9 +1,11 @@
+// Package userservice provides business logic for user management.
 package userservice
 
 import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
 
@@ -14,11 +16,13 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
+// UserService handles business logic for user management.
 type UserService struct {
 	*service.App
 	userRepo *userrepository.Repo
 }
 
+// New creates a new UserService with the provided app and user repository.
 func New(app *service.App, userRepo *userrepository.Repo) *UserService {
 	return &UserService{
 		App:      app,
@@ -26,6 +30,7 @@ func New(app *service.App, userRepo *userrepository.Repo) *UserService {
 	}
 }
 
+// Create persists a new user record after hashing the password.
 func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User, error) {
 	record.OrganisationID = 1
 	record.IsActive = 1
@@ -68,6 +73,7 @@ func (s *UserService) Create(ctx context.Context, record *user.User) (*user.User
 	return r, nil
 }
 
+// Update saves changes to an existing user record.
 func (s *UserService) Update(ctx context.Context, record *user.User) (*user.User, error) {
 	record.SetUpdated(ctx)
 
@@ -93,6 +99,7 @@ func (s *UserService) Update(ctx context.Context, record *user.User) (*user.User
 	return r, nil
 }
 
+// DeleteByID soft-deletes a user record by setting its deleted_at timestamp.
 func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck
@@ -114,8 +121,9 @@ func (s *UserService) DeleteByID(ctx context.Context, record *user.User) error {
 	return nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) error {
-	err := s.userRepo.GetByID(ctx, s.DB, ID, record)
+// GetByID retrieves a user record by its ID.
+func (s *UserService) GetByID(ctx context.Context, record *user.User, id int32) error {
+	err := s.userRepo.GetByID(ctx, s.DB, id, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
 	}
@@ -123,8 +131,8 @@ func (s *UserService) GetByID(ctx context.Context, record *user.User, ID int32) 
 	return nil
 }
 
+// CreateUserSession creates a new authenticated session for the given user.
 func (s *UserService) CreateUserSession(ctx context.Context, record *user.User) (*usersession.UserSession, error) {
-
 	us := usersessionservice.New(s.App, nil)
 	session, err := us.Create(ctx, record)
 	if err != nil {
@@ -136,6 +144,7 @@ func (s *UserService) CreateUserSession(ctx context.Context, record *user.User) 
 	return session, nil
 }
 
+// GetAll retrieves a paginated collection of user records.
 func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User, error) {
 	records, err := s.userRepo.GetCollection(ctx, s.DB, r)
 	if err != nil {
@@ -145,6 +154,7 @@ func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User,
 	return records, nil
 }
 
+// GetByEmailAddress retrieves a user record by their email address.
 func (s *UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
 	err := s.userRepo.GetByEmailAddress(ctx, s.DB, emailAddress, record)
 	if err != nil {

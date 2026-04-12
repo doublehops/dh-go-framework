@@ -1,3 +1,4 @@
+// Package usersessionservice provides business logic for user session management.
 package usersessionservice
 
 import (
@@ -17,11 +18,13 @@ import (
 
 const sessionTimeout = 24 * time.Hour
 
+// UserSessionService handles business logic for user session management.
 type UserSessionService struct {
 	*service.App
 	sessionRepo *usersessionrepository.Repo
 }
 
+// New creates a new UserSessionService with the provided app and session repository.
 func New(app *service.App, sessionRepo *usersessionrepository.Repo) *UserSessionService {
 	return &UserSessionService{
 		App:         app,
@@ -29,6 +32,7 @@ func New(app *service.App, sessionRepo *usersessionrepository.Repo) *UserSession
 	}
 }
 
+// Create generates a new session token and persists a session record for the given user.
 func (s *UserSessionService) Create(ctx context.Context, user *user.User) (*usersession.UserSession, error) {
 	token, err := generateToken(32)
 	if err != nil {
@@ -72,6 +76,7 @@ func (s *UserSessionService) Create(ctx context.Context, user *user.User) (*user
 	return r, nil
 }
 
+// UpdateLastRequest updates the last_request timestamp on a session record.
 func (s *UserSessionService) UpdateLastRequest(ctx context.Context, record *usersession.UserSession) error {
 	now := time.Now()
 	record.LastRequest = &now
@@ -84,7 +89,7 @@ func (s *UserSessionService) UpdateLastRequest(ctx context.Context, record *user
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToUpdateRecord+" "+err.Error(), nil)
 
-		return fmt.Errorf(service.UnableToUpdateRecord)
+		return errors.New(service.UnableToUpdateRecord)
 	}
 
 	err = tx.Commit()
@@ -95,6 +100,7 @@ func (s *UserSessionService) UpdateLastRequest(ctx context.Context, record *user
 	return nil
 }
 
+// DeleteByID soft-deletes a session record by setting its deleted_at timestamp.
 func (s *UserSessionService) DeleteByID(ctx context.Context, record *usersession.UserSession) error {
 	now := time.Now()
 	record.UpdatedAt = &now
@@ -118,8 +124,9 @@ func (s *UserSessionService) DeleteByID(ctx context.Context, record *usersession
 	return nil
 }
 
-func (s *UserSessionService) GetByID(ctx context.Context, record *usersession.UserSession, ID int32) error {
-	err := s.sessionRepo.GetByID(ctx, s.DB, ID, record)
+// GetByID retrieves a user session record by its ID.
+func (s *UserSessionService) GetByID(ctx context.Context, record *usersession.UserSession, id int32) error {
+	err := s.sessionRepo.GetByID(ctx, s.DB, id, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
 	}
@@ -127,6 +134,7 @@ func (s *UserSessionService) GetByID(ctx context.Context, record *usersession.Us
 	return nil
 }
 
+// GetByToken retrieves a user session by its authentication token.
 func (s *UserSessionService) GetByToken(ctx context.Context, record *usersession.UserSession, token string) error {
 	err := s.sessionRepo.GetByToken(ctx, s.DB, token, record)
 	if err != nil {
@@ -136,6 +144,7 @@ func (s *UserSessionService) GetByToken(ctx context.Context, record *usersession
 	return nil
 }
 
+// GetByUserID retrieves a user session by the associated user ID.
 func (s *UserSessionService) GetByUserID(ctx context.Context, record *usersession.UserSession, userID int32) error {
 	err := s.sessionRepo.GetByUserID(ctx, s.DB, userID, record)
 	if err != nil {
@@ -145,6 +154,7 @@ func (s *UserSessionService) GetByUserID(ctx context.Context, record *usersessio
 	return nil
 }
 
+// GetAll retrieves a paginated collection of user sessions.
 func (s *UserSessionService) GetAll(ctx context.Context, r *req.Request) ([]*usersession.UserSession, error) {
 	records, err := s.sessionRepo.GetCollection(ctx, s.DB, r)
 	if err != nil {
@@ -164,10 +174,12 @@ func generateToken(nbytes int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
+// HasExpired returns true if the session's last request exceeds the session timeout duration.
 func (s *UserSessionService) HasExpired(us *usersession.UserSession) bool {
 	return us.LastRequest.Add(sessionTimeout).Before(time.Now())
 }
 
+// SetLastRequestNow updates the session's last_request timestamp to the current time.
 func (s *UserSessionService) SetLastRequestNow(ctx context.Context, record *usersession.UserSession) error {
 	tx := s.DB.MustBegin()
 	defer tx.Rollback() // nolint: errcheck

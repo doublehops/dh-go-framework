@@ -1,3 +1,4 @@
+// Package main is the entry point for the API server.
 package main
 
 import (
@@ -36,7 +37,7 @@ func run() error {
 		return fmt.Errorf("error starting main. %s", err.Error())
 	}
 
-	fmt.Printf(">>>>>>>>>>>>>> HOST: %s\n", cfg.DB.Host)
+	log.Printf(">>>>>>>>>>>>>> HOST: %s\n", cfg.DB.Host)
 
 	// Setup logger.
 	l, err := logga.New(&cfg.Logging)

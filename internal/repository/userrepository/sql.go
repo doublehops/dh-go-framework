@@ -1,3 +1,4 @@
+// Package userrepository provides database operations for user records.
 package userrepository
 
 var insertRecordSQL = `INSERT INTO user (

@@ -11,6 +11,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/migration/helpers"
 )
 
+// Action holds the configuration for a migration run including direction, number, and DB connection.
 type Action struct {
 	Action string
 	Number int
@@ -20,11 +21,13 @@ type Action struct {
 	Path string
 }
 
+// File represents a migration file with its parsed SQL queries.
 type File struct {
 	Filename string
 	Queries  []string
 }
 
+// TrimExtension removes the .up.sql or .down.sql suffix from a migration filename.
 func TrimExtension(filename string) string {
 	var str string
 
@@ -34,13 +37,17 @@ func TrimExtension(filename string) string {
 	return str
 }
 
+// TableList is a slice of Table records used when inspecting database tables.
 type TableList []Table
 
+// Table represents a database table name, used to check for the migrations table.
 type Table struct {
 	Name string
 }
 
-// nolint:cyclop
+// Migrate runs the migration action (create, up, or down) as specified in a.Action.
+//
+//nolint:cyclop
 func (a *Action) Migrate() error {
 	var err error
 
@@ -51,6 +58,7 @@ func (a *Action) Migrate() error {
 
 	if a.Action == "create" {
 		err = a.CreateMigration(a.Path)
+
 		return err
 	}
 
@@ -61,6 +69,7 @@ func (a *Action) Migrate() error {
 		}
 		if len(pendingFiles) == 0 {
 			helpers.PrintMsg("There are no pending migrations\n")
+
 			return nil
 		}
 		migrationFiles, err := a.parseMigrations(pendingFiles)
@@ -80,6 +89,7 @@ func (a *Action) Migrate() error {
 		}
 		if len(previousFiles) == 0 {
 			helpers.PrintMsg("There are no previous migrations to rollback\n")
+
 			return nil
 		}
 		migrationFiles, err := a.parseMigrations(previousFiles)
@@ -95,6 +105,7 @@ func (a *Action) Migrate() error {
 	return nil
 }
 
+// IsValidAction returns true if the key is one of the supported migration actions.
 func (a *Action) IsValidAction(key string) bool {
 	validActions := []string{
 		"create",
@@ -111,6 +122,7 @@ func (a *Action) IsValidAction(key string) bool {
 	return false
 }
 
+// PrintHelp prints usage instructions for the migration CLI tool and exits.
 func (a *Action) PrintHelp() {
 	helpMsg := `
 Usage: <your_script> -action=<action> -number=<number>
@@ -119,7 +131,7 @@ Examples:
 ./main.go -action up -number 1 // number is optional. Will run all migrations if not included.
 ./main.go -action down -number 1 // number is optional. Will run only one migration if not included.
 `
-	os.Stderr.WriteString(helpMsg)
+	_, _ = os.Stderr.WriteString(helpMsg)
 	os.Exit(1)
 }
 
