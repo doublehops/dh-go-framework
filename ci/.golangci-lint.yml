@@ -1,25 +1,12 @@
 version: "2"
 
-# options for analysis running
 run:
-
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
-
-  # include test files or not, default is true
   tests: true
 
-  # Skip default dirs
-  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
-  skip-dirs-use-default: true
-
-# output configuration options
 output:
-  # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
-  # default is "colored-line-number"
-  format: colored-line-number
-
-  # sorts results by: filepath, line and column
+  formats:
+    - format: colored-line-number
   sort-results: false
 
 # See: https://golangci-lint.run/usage/linters/
@@ -59,29 +46,19 @@ linters:
         - appendCombine
         - nilValReturn
         - weakCond
-
-  disable-all: false
-  fast: false
+    nlreturn:
+      block-size: 2
+    forbidigo:
+      forbid:
+        - ^print.*$
+        - 'fmt\.Print.*'
+        - 'ioutil\.*'
+    funlen:
+      lines: 120
+    gosec:
+      excludes:
+        - G101
 
 formatters:
   enable:
     - gofumpt
-
-
-  nlreturn:
-    # size of the block (including return statement that is still "OK") so no return split required.
-    block-size: 2
-
-  forbidigo:
-    forbid:
-      - ^print.*$
-      - 'fmt\.Print.*'
-      - 'ioutil\.*'
-
-  funlen:
-    # Double the default because test data and logging makes things awful
-    lines: 120
-
-  gosec:
-    excludes:
-      - G101
