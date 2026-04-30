@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +19,10 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/testtools"
 )
 
-var cfg *config.Config
+var (
+	cfg       *config.Config
+	authToken string // Authorization header value set once in TestMain
+)
 
 func TestMain(m *testing.M) {
 	var err error
@@ -28,7 +32,26 @@ func TestMain(m *testing.M) {
 		log.Printf("error starting main. %s", err.Error())
 		os.Exit(1)
 	}
+
+	stopServer, err := testtools.StartTestServer()
+	if err != nil {
+		log.Fatalf("failed to start test server: %v", err)
+	}
+
+	if err = testtools.RunMigrations(cfg); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
+	// Use a unique email per test run to avoid conflicts with existing records.
+	email := fmt.Sprintf("testuser-%d@example.com", time.Now().UnixNano())
+
+	authToken, err = testtools.CreateTestUser(cfg, email, "pass123")
+	if err != nil {
+		log.Fatalf("failed to create test user: %v", err)
+	}
+
 	code := m.Run()
+	stopServer()
 	os.Exit(code)
 }
 
@@ -39,12 +62,20 @@ func TestAuthorCRUD(t *testing.T) {
 	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
 	ctx := context.TODO()
 
+	authHeader := map[string]string{"Authorization": authToken}
+
 	payload := author.Author{
 		Name: "author1",
 	}
 
 	// Test CREATE new record.
+	// Without auth
 	statusCode, res, err := req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+
+	// With auth
+	statusCode, res, err = req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload, authHeader)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusCreated))
 
@@ -115,4 +146,14 @@ func TestAuthorCRUD(t *testing.T) {
 	statusCode, _, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusNotFound))
+
+	// Test that GetAll requires authentication.
+	statusCode, _, err = req.MakeRequest(ctx, http.MethodGet, "v1/author", nil, nil)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+
+	// Test that GetAll succeeds with a valid token.
+	statusCode, _, err = req.MakeRequest(ctx, http.MethodGet, "v1/author", nil, nil, authHeader)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
 }

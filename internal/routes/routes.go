@@ -23,8 +23,8 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	healthGroup := group.New("/health").GET(healthHandle.Check)
 
 	authorHandle := author.New(app)
-	authorGroup := group.New("/author")
-	authorGroup.GET(authorHandle.GetAll).Middleware(authMW)
+	authorGroup := group.New("/author").Middleware(authMW)
+	authorGroup.GET(authorHandle.GetAll)
 	authorGroup.Children(
 		group.New("/:id").GET(authorHandle.GetByID),
 		group.New("").POST(authorHandle.Create),
@@ -34,8 +34,8 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 
 	userHandle := user.New(app)
 
-	userGroup := group.New("/user")
-	userGroup.GET(userHandle.GetAll).Middleware(authMW)
+	userGroup := group.New("/user").Middleware(authMW)
+	userGroup.GET(userHandle.GetAll)
 	userGroup.Children(
 		group.New("/:id").GET(userHandle.GetByID),
 		group.New("").POST(userHandle.Create),

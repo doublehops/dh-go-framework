@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	maxAttempts = 5
+	maxAttempts = 3
 	delay       = 5
 )
 
