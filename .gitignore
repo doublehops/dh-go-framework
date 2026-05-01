@@ -1,3 +1,4 @@
 .db-data
 main
 .env
+tmp

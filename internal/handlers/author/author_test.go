@@ -69,12 +69,12 @@ func TestAuthorCRUD(t *testing.T) {
 	}
 
 	// Test CREATE new record.
-	// Without auth
+	// Without auth.
 	statusCode, res, err := req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
 
-	// With auth
+	// With auth.
 	statusCode, res, err = req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload, authHeader)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusCreated))
@@ -96,8 +96,14 @@ func TestAuthorCRUD(t *testing.T) {
 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
 
 	// Test GET new record.
+	// Without auth.
 	path := fmt.Sprintf("v1/author/%d", d.ID)
 	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+	// With auth.
+	path = fmt.Sprintf("v1/author/%d", d.ID)
+	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, authHeader)
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
 
