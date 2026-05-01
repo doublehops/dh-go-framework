@@ -163,3 +163,82 @@ func TestAuthorCRUD(t *testing.T) {
 	assert.NoError(t, err, "unexpected error in request/response")
 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
 }
+
+func TestAuthorCreate(t *testing.T) {
+	var ok bool
+	var d *author.Author
+	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
+	ctx := context.TODO()
+
+	authHeader := map[string]string{"Authorization": authToken}
+
+	payload := author.Author{
+		Name: "author1",
+	}
+
+	// Test CREATE new record.
+	// Without auth.
+	statusCode, res, err := req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+
+	// With auth.
+	statusCode, res, err = req.MakeRequest(ctx, http.MethodPost, "v1/author", nil, payload, authHeader)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusCreated))
+
+	record := request.SingleItemResp{
+		Data: &author.Author{},
+	}
+	err = json.Unmarshal(res, &record)
+	assert.NoError(t, err, "unable to unmarshal record")
+	if d, ok = record.Data.(*author.Author); !ok {
+		t.Error("unable to convert response")
+	}
+
+	assert.NoError(t, err, "error unmarshalling record")
+	assert.Equal(t, payload.Name, d.Name)
+	assert.Greater(t, d.ID, int32(0))
+	expectedTime, duration := testtools.GetTolerance(5)
+	assert.WithinDuration(t, expectedTime, *d.CreatedAt, duration)
+	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
+}
+
+// func TestAuthorGet(t *testing.T) {
+// 	var ok bool
+// 	var d *author.Author
+// 	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
+// 	ctx := context.TODO()
+//
+// 	authHeader := map[string]string{"Authorization": authToken}
+//
+// 	record := request.SingleItemResp{
+// 		Data: &author.Author{},
+// 	}
+//
+// 	r :=
+//
+// 	// Test GET new record.
+// 	// Without auth.
+// 	path := fmt.Sprintf("v1/author/%d", d.ID)
+// 	statusCode, res, err := req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
+// 	assert.NoError(t, err, "unexpected error in request/response")
+// 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+// 	// With auth.
+// 	path = fmt.Sprintf("v1/author/%d", d.ID)
+// 	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, authHeader)
+// 	assert.NoError(t, err, "unexpected error in request/response")
+// 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
+//
+// 	err = json.Unmarshal(res, &record)
+// 	assert.NoError(t, err, "unable to unmarshal record")
+// 	if d, ok = record.Data.(*author.Author); !ok {
+// 		t.Error("unable to convert response")
+// 	}
+//
+// 	assert.NoError(t, err, "error unmarshalling record")
+// 	assert.Equal(t, payload.Name, d.Name)
+// 	assert.Greater(t, d.ID, int32(0))
+// 	expectedTime, duration = testtools.GetTolerance(5)
+// 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
+// }
