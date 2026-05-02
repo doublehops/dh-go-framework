@@ -10,18 +10,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/doublehops/dh-go-framework/internal/app"
+	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/httprequest"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
+	"github.com/doublehops/dh-go-framework/internal/model/user"
 	"github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/testtools"
 )
 
 var (
-	cfg       *config.Config
-	authToken string // Authorization header value set once in TestMain
+	cfg        *config.Config
+	authToken  string // Authorization header value set once in TestMain
+	authedUser *user.User
 )
 
 func TestMain(m *testing.M) {
@@ -45,7 +49,7 @@ func TestMain(m *testing.M) {
 	// Use a unique email per test run to avoid conflicts with existing records.
 	email := fmt.Sprintf("testuser-%d@example.com", time.Now().UnixNano())
 
-	authToken, err = testtools.CreateTestUser(cfg, email, "pass123")
+	authedUser, authToken, err = testtools.CreateTestUser(cfg, email, "pass123")
 	if err != nil {
 		log.Fatalf("failed to create test user: %v", err)
 	}
@@ -56,7 +60,7 @@ func TestMain(m *testing.M) {
 }
 
 //nolint:funlen
-func TestAuthorCRUD(t *testing.T) {
+func TestAuthorCRUD_TODO_SPLIT(t *testing.T) {
 	var ok bool
 	var d *author.Author
 	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
@@ -204,41 +208,50 @@ func TestAuthorCreate(t *testing.T) {
 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
 }
 
-// func TestAuthorGet(t *testing.T) {
-// 	var ok bool
-// 	var d *author.Author
-// 	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
-// 	ctx := context.TODO()
-//
-// 	authHeader := map[string]string{"Authorization": authToken}
-//
-// 	record := request.SingleItemResp{
-// 		Data: &author.Author{},
-// 	}
-//
-// 	r :=
-//
-// 	// Test GET new record.
-// 	// Without auth.
-// 	path := fmt.Sprintf("v1/author/%d", d.ID)
-// 	statusCode, res, err := req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
-// 	assert.NoError(t, err, "unexpected error in request/response")
-// 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
-// 	// With auth.
-// 	path = fmt.Sprintf("v1/author/%d", d.ID)
-// 	statusCode, res, err = req.MakeRequest(ctx, http.MethodGet, path, nil, authHeader)
-// 	assert.NoError(t, err, "unexpected error in request/response")
-// 	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
-//
-// 	err = json.Unmarshal(res, &record)
-// 	assert.NoError(t, err, "unable to unmarshal record")
-// 	if d, ok = record.Data.(*author.Author); !ok {
-// 		t.Error("unable to convert response")
-// 	}
-//
-// 	assert.NoError(t, err, "error unmarshalling record")
-// 	assert.Equal(t, payload.Name, d.Name)
-// 	assert.Greater(t, d.ID, int32(0))
-// 	expectedTime, duration = testtools.GetTolerance(5)
-// 	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
-// }
+func TestAuthorGet(t *testing.T) {
+	var ok bool
+	var d *author.Author
+	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
+	ctx := context.TODO()
+
+	ctx = context.WithValue(ctx, app.UserIDKey, authedUser.ID)
+
+	authHeader := map[string]string{"Authorization": authToken}
+
+	ar := &author.Author{
+		Name: "author1",
+	}
+	appObj, err := testtools.CreateApp()
+	assert.NoError(t, err, "unexpected error creating app")
+
+	srv := authorservice.New(appObj)
+	record, err := srv.Create(ctx, ar)
+	assert.NoError(t, err, "unexpected error creating record")
+	response := request.SingleItemResp{
+		Data: &author.Author{},
+	}
+
+	// Test GET new record.
+	// Without auth.
+	path := fmt.Sprintf("v1/author/%d", record.ID)
+	statusCode, _, err := req.MakeRequest(ctx, http.MethodGet, path, nil, nil)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusUnauthorized))
+	// With auth.
+	path = fmt.Sprintf("v1/author/%d", record.ID)
+	statusCode, res, err := req.MakeRequest(ctx, http.MethodGet, path, nil, nil, authHeader)
+	assert.NoError(t, err, "unexpected error in request/response")
+	assert.Contains(t, statusCode, fmt.Sprintf("%d", http.StatusOK))
+
+	err = json.Unmarshal(res, &response)
+	assert.NoError(t, err, "unable to unmarshal record")
+	if d, ok = response.Data.(*author.Author); !ok {
+		t.Error("unable to convert response")
+	}
+
+	assert.NoError(t, err, "error unmarshalling record")
+	assert.Equal(t, ar.Name, d.Name)
+	assert.Equal(t, d.ID, record.ID)
+	expectedTime, duration := testtools.GetTolerance(5)
+	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
+}

@@ -3,7 +3,6 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strings"
 
@@ -53,7 +52,6 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 		_ = ss.SetLastRequestNow(r.Context(), record)
 
 		r = r.WithContext(context.WithValue(r.Context(), apppackage.UserIDKey, record.UserID))
-		log.Println(">>>>> middleware")
 		next(w, r, ps)
 	}
 }

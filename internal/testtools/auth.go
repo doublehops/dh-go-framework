@@ -27,7 +27,7 @@ type TestCredentials struct {
 
 // CreateTestUser creates a user and session directly via the service layer, bypassing HTTP.
 // Returns the Authorization header value ("Bearer <token>") ready to pass to MakeRequest.
-func CreateTestUser(cfg *config.Config, email, password string) (string, error) {
+func CreateTestUser(cfg *config.Config, email, password string) (*usermodel.User, string, error) {
 	logCfg := &config.Logging{
 		Writer:       "stdout",
 		LogLevel:     "DEBUG",
@@ -36,12 +36,12 @@ func CreateTestUser(cfg *config.Config, email, password string) (string, error) 
 
 	l, err := logga.New(logCfg)
 	if err != nil {
-		return "", fmt.Errorf("CreateTestUser: failed to create logger: %w", err)
+		return nil, "", fmt.Errorf("CreateTestUser: failed to create logger: %w", err)
 	}
 
 	database, err := db.New(l, cfg.DB)
 	if err != nil {
-		return "", fmt.Errorf("CreateTestUser: failed to connect to database: %w", err)
+		return nil, "", fmt.Errorf("CreateTestUser: failed to connect to database: %w", err)
 	}
 
 	app := &service.App{
@@ -53,25 +53,25 @@ func CreateTestUser(cfg *config.Config, email, password string) (string, error) 
 
 	userSvc := userservice.New(app)
 
-	record := &usermodel.User{
+	payload := &usermodel.User{
 		Name:         "testuser",
 		EmailAddress: email,
 		Password:     password,
 	}
 
-	user, err := userSvc.Create(ctx, record)
+	record, err := userSvc.Create(ctx, payload)
 	if err != nil {
-		return "", fmt.Errorf("CreateTestUser: failed to create user: %w", err)
+		return nil, "", fmt.Errorf("CreateTestUser: failed to create user: %w", err)
 	}
 
 	sessionSvc := usersessionservice.New(app)
 
-	session, err := sessionSvc.Create(ctx, user)
+	session, err := sessionSvc.Create(ctx, record)
 	if err != nil {
-		return "", fmt.Errorf("CreateTestUser: failed to create session: %w", err)
+		return nil, "", fmt.Errorf("CreateTestUser: failed to create session: %w", err)
 	}
 
-	return "Bearer " + session.Token, nil
+	return record, "Bearer " + session.Token, nil
 }
 
 // GetAuthToken logs in with the given credentials and returns the Authorization header value
