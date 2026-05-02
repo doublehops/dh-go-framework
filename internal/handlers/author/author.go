@@ -11,7 +11,6 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/handlers"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
-	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
@@ -19,18 +18,14 @@ import (
 
 // Handle holds the dependencies for the author HTTP handler.
 type Handle struct {
-	repo *repositoryauthor.Author
 	srv  *authorservice.AuthorService
 	base *handlers.BaseHandler
 }
 
 // New creates a new author Handle with the required dependencies.
 func New(app *service.App) *Handle {
-	ar := repositoryauthor.New(app.Log)
-
 	return &Handle{
-		repo: ar,
-		srv:  authorservice.New(app, ar),
+		srv:  authorservice.New(app),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},

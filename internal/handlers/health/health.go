@@ -7,7 +7,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/doublehops/dh-go-framework/internal/handlers"
-	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/authorservice"
@@ -20,18 +19,14 @@ type Response struct {
 
 // Handle holds dependencies for the health check handler.
 type Handle struct {
-	repo *repositoryauthor.Author
 	srv  *authorservice.AuthorService
 	base *handlers.BaseHandler
 }
 
 // New creates a new health check Handle.
 func New(app *service.App) *Handle {
-	ar := repositoryauthor.New(app.Log)
-
 	return &Handle{
-		repo: ar,
-		srv:  authorservice.New(app, ar),
+		srv:  authorservice.New(app),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},

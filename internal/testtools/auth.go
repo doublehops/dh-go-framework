@@ -13,8 +13,6 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/httprequest"
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	usermodel "github.com/doublehops/dh-go-framework/internal/model/user"
-	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
-	"github.com/doublehops/dh-go-framework/internal/repository/usersessionrepository"
 	"github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/userservice"
@@ -53,8 +51,7 @@ func CreateTestUser(cfg *config.Config, email, password string) (string, error) 
 
 	ctx := context.Background()
 
-	userRepo := userrepository.New(l)
-	userSvc := userservice.New(app, userRepo)
+	userSvc := userservice.New(app)
 
 	record := &usermodel.User{
 		Name:         "testuser",
@@ -67,8 +64,7 @@ func CreateTestUser(cfg *config.Config, email, password string) (string, error) 
 		return "", fmt.Errorf("CreateTestUser: failed to create user: %w", err)
 	}
 
-	sessionRepo := usersessionrepository.New(l)
-	sessionSvc := usersessionservice.New(app, sessionRepo)
+	sessionSvc := usersessionservice.New(app)
 
 	session, err := sessionSvc.Create(ctx, user)
 	if err != nil {

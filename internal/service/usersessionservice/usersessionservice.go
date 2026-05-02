@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/doublehops/dh-go-framework/internal/model/user"
 	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"github.com/doublehops/dh-go-framework/internal/repository/usersessionrepository"
@@ -18,17 +20,29 @@ import (
 
 const sessionTimeout = 24 * time.Hour
 
+// SessionRepository defines the data access methods required by UserSessionService.
+type SessionRepository interface {
+	Create(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
+	UpdateLastRequest(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
+	Delete(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
+	GetByID(ctx context.Context, db *sqlx.DB, id int32, record *usersession.UserSession) error
+	GetByToken(ctx context.Context, db *sqlx.DB, token string, record *usersession.UserSession) error
+	GetByUserID(ctx context.Context, db *sqlx.DB, userID int32, record *usersession.UserSession) error
+	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*usersession.UserSession, error)
+	SetLastRequestNow(ctx context.Context, db *sqlx.DB, record *usersession.UserSession) error
+}
+
 // UserSessionService handles business logic for user session management.
 type UserSessionService struct {
 	*service.App
-	sessionRepo *usersessionrepository.Repo
+	sessionRepo SessionRepository
 }
 
-// New creates a new UserSessionService with the provided app and session repository.
-func New(app *service.App, sessionRepo *usersessionrepository.Repo) *UserSessionService {
+// New creates a new UserSessionService, wiring its own repository internally.
+func New(app *service.App) *UserSessionService {
 	return &UserSessionService{
 		App:         app,
-		sessionRepo: sessionRepo,
+		sessionRepo: usersessionrepository.New(app.Log),
 	}
 }
 
