@@ -258,7 +258,6 @@ func TestAuthorGet(t *testing.T) {
 
 func TestAuthorUpdate(t *testing.T) {
 	var ok bool
-	var d *author.Author
 
 	req, _ := httprequest.GetRequester(cfg.Host.TestURL)
 	ctx := context.TODO()
@@ -297,13 +296,13 @@ func TestAuthorUpdate(t *testing.T) {
 
 	err = json.Unmarshal(res, &response)
 	assert.NoError(t, err, "unable to unmarshal record")
-	if d, ok = response.Data.(*author.Author); !ok {
+	if record, ok = response.Data.(*author.Author); !ok {
 		t.Error("unable to convert response")
 	}
 
 	assert.NoError(t, err, "error unmarshalling record")
-	assert.Equal(t, payload.Name, d.Name)
-	assert.Equal(t, record.ID, d.ID)
+	assert.Equal(t, payload.Name, record.Name)
+	assert.Equal(t, record.ID, record.ID)
 	expectedTime, duration := testtools.GetTolerance(5)
-	assert.WithinDuration(t, expectedTime, *d.UpdatedAt, duration)
+	assert.WithinDuration(t, expectedTime, *record.UpdatedAt, duration)
 }
