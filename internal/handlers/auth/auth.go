@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -88,6 +89,22 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	}
 
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
+}
+
+// Logout handles POST /auth/logout requests, invalidating the caller's session token.
+func (h *Handle) Logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ctx := r.Context()
+	h.base.Log.Info(ctx, "Request made to "+tools.CurrentFunction(), nil)
+
+	token, _ := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+
+	if err := h.srv.DeleteSessionByToken(ctx, token); err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("unable to logout"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusNoContent, nil)
 }
 
 // GetResponse builds the successful login response payload from the user session record.

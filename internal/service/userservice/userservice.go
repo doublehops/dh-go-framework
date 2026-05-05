@@ -165,6 +165,18 @@ func (s *UserService) GetAll(ctx context.Context, r *req.Request) ([]*user.User,
 	return records, nil
 }
 
+// DeleteSessionByToken looks up a session by token and soft-deletes it.
+func (s *UserService) DeleteSessionByToken(ctx context.Context, token string) error {
+	us := usersessionservice.New(s.App)
+
+	record := &usersession.UserSession{}
+	if err := us.GetByToken(ctx, record, token); err != nil || record.ID == 0 {
+		return errors.New(service.UnableToRetrieveRecord)
+	}
+
+	return us.DeleteByID(ctx, record)
+}
+
 // GetByEmailAddress retrieves a user record by their email address.
 func (s *UserService) GetByEmailAddress(ctx context.Context, record *user.User, emailAddress string) error {
 	err := s.userRepo.GetByEmailAddress(ctx, s.DB, emailAddress, record)
