@@ -67,7 +67,7 @@ func login(r httprequest.Requester, email, password string) (string, string, err
 	}
 
 	resp := request.SingleItemResp{Data: &usermodel.SuccessfulLoginResponse{}}
-	if err = json.Unmarshal(body, &resp); err != nil {
+	if err := json.Unmarshal(body, &resp); err != nil {
 		return statusCode, "", err
 	}
 
