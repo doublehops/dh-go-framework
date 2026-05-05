@@ -26,7 +26,7 @@ type Handle struct {
 // New creates a new health check Handle.
 func New(app *service.App) *Handle {
 	return &Handle{
-		srv:  authorservice.New(app),
+		srv: authorservice.New(app),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},

@@ -24,7 +24,7 @@ func StartTestServer() (func(), error) {
 
 	binPath := filepath.Join(projectRoot, "tmp", "testserver-bin")
 
-	if err := os.MkdirAll(filepath.Dir(binPath), 0o750); err != nil { //nolint:gomnd
+	if err := os.MkdirAll(filepath.Dir(binPath), 0o750); err != nil {
 		return nil, fmt.Errorf("StartTestServer: failed to create tmp dir: %w", err)
 	}
 

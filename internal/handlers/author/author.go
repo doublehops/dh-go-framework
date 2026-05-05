@@ -25,7 +25,7 @@ type Handle struct {
 // New creates a new author Handle with the required dependencies.
 func New(app *service.App) *Handle {
 	return &Handle{
-		srv:  authorservice.New(app),
+		srv: authorservice.New(app),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},

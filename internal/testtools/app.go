@@ -11,6 +11,7 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
+// CreateApp will create the App variable required for  setup in tests.
 func CreateApp() (*service.App, error) {
 	cfg, err := config.New("./config_test.json")
 	if err != nil {
