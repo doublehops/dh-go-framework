@@ -82,6 +82,6 @@ func (u *User) ValidateLogin() req.ErrMsgs {
 	return validator.RunValidation([]validator.Rule{
 		// {"organisationId", u.OrganisationID, true, []validator.ValidationFuncs{validator.IsInt("")}},                         //nolint:govet
 		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.EmailAddress("")}}, //nolint:govet
-		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},  //nolint:govet
+		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 64, "")}}, //nolint:govet
 	})
 }

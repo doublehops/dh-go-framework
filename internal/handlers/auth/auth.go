@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -68,7 +69,7 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	}
 
 	if passwordValid := h.srv.CheckPasswordHash(record.Password, user.Password); !passwordValid {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.ServerErrResp(req.ErrBadUsernameOrPassword.Error()))
+		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp(req.ErrBadUsernameOrPassword.Error(), http.StatusBadRequest))
 
 		return
 	}
@@ -90,17 +91,21 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
 
-// func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.ResponseUser, error) {
-// 	userResponse := &model.ResponseUser{}
-// 	err := copier.Copy(&userResponse, &record)
-// 	if err != nil {
-// 		h.base.Log.Error(ctx, "error building response object", nil)
-//
-// 		return nil, errors.New("error building response object")
-// 	}
-//
-// 	return userResponse, nil
-// }
+// Logout handles POST /auth/logout requests, invalidating the caller's session token.
+func (h *Handle) Logout(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ctx := r.Context()
+	h.base.Log.Info(ctx, "Request made to "+tools.CurrentFunction(), nil)
+
+	token, _ := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+
+	if err := h.srv.DeleteSessionByToken(ctx, token); err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("unable to logout"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusNoContent, nil)
+}
 
 // GetResponse builds the successful login response payload from the user session record.
 func (h *Handle) GetResponse(_ context.Context, record *usersession.UserSession) (*model.SuccessfulLoginResponse, error) {

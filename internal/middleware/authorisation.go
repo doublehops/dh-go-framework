@@ -3,6 +3,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 
 	apppackage "github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/model/usersession"
+	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
 )
@@ -20,14 +22,14 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" || !strings.Contains(authHeader, "Bearer") {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			unauthorizedJSON(w)
 
 			return
 		}
 
 		token, found := strings.CutPrefix(authHeader, "Bearer ")
 		if !found {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			unauthorizedJSON(w)
 
 			return
 		}
@@ -37,13 +39,13 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 		ss := usersessionservice.New(app)
 		err := ss.GetByToken(r.Context(), record, token)
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			unauthorizedJSON(w)
 
 			return
 		}
 
 		if ss.HasExpired(record) {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			unauthorizedJSON(w)
 
 			return
 		}
@@ -54,4 +56,10 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 		r = r.WithContext(context.WithValue(r.Context(), apppackage.UserIDKey, record.UserID))
 		next(w, r, ps)
 	}
+}
+
+func unauthorizedJSON(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	_ = json.NewEncoder(w).Encode(req.GeneralErrResp(req.ErrNotAuthorised.Error(), http.StatusUnauthorized))
 }

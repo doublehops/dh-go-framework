@@ -48,6 +48,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 	authGroup := group.New("/auth")
 	authGroup.Children(
 		group.New("/login").POST(authHandle.Login),
+		group.New("/logout").POST(authMW(authHandle.Logout)),
 	)
 
 	// New routes created by scaffolding can be added here.
