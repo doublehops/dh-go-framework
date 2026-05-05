@@ -37,8 +37,6 @@ func run() error {
 		return fmt.Errorf("error starting main. %s", err.Error())
 	}
 
-	log.Printf(">>>>>>>>>>>>>> HOST: %s\n", cfg.DB.Host)
-
 	// Setup logger.
 	l, err := logga.New(&cfg.Logging)
 	if err != nil {
