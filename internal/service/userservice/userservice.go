@@ -6,27 +6,38 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/doublehops/dh-go-framework/internal/model/usersession"
-	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/user"
+	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
+	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
 )
+
+// UserRepository defines the data access methods required by UserService.
+type UserRepository interface {
+	Create(ctx context.Context, tx *sqlx.Tx, record *user.User) error
+	Update(ctx context.Context, tx *sqlx.Tx, record *user.User) error
+	Delete(ctx context.Context, tx *sqlx.Tx, record *user.User) error
+	GetByID(ctx context.Context, db *sqlx.DB, id int32, record *user.User) error
+	GetByEmailAddress(ctx context.Context, db *sqlx.DB, emailAddress string, record *user.User) error
+	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*user.User, error)
+}
 
 // UserService handles business logic for user management.
 type UserService struct {
 	*service.App
-	userRepo *userrepository.Repo
+	userRepo UserRepository
 }
 
-// New creates a new UserService with the provided app and user repository.
-func New(app *service.App, userRepo *userrepository.Repo) *UserService {
+// New creates a new UserService, wiring its own repository internally.
+func New(app *service.App) *UserService {
 	return &UserService{
 		App:      app,
-		userRepo: userRepo,
+		userRepo: userrepository.New(app.Log),
 	}
 }
 
@@ -133,7 +144,7 @@ func (s *UserService) GetByID(ctx context.Context, record *user.User, id int32) 
 
 // CreateUserSession creates a new authenticated session for the given user.
 func (s *UserService) CreateUserSession(ctx context.Context, record *user.User) (*usersession.UserSession, error) {
-	us := usersessionservice.New(s.App, nil)
+	us := usersessionservice.New(s.App)
 	session, err := us.Create(ctx, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)

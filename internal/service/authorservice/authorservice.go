@@ -4,6 +4,8 @@ package authorservice
 import (
 	"context"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
@@ -11,22 +13,26 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
-// const (
-// 	unableToRetrieveRecord    = "unable to retrieve record"
-// 	unableToCommitTransaction = "unable to commit transaction"
-// )
+// AuthorRepository defines the data access methods required by AuthorService.
+type AuthorRepository interface {
+	Create(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
+	Update(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
+	Delete(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
+	GetByID(ctx context.Context, db *sqlx.DB, id int32, record *author.Author) error
+	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*author.Author, error)
+}
 
 // AuthorService handles business logic for author management.
 type AuthorService struct {
 	*service.App
-	authorRepo *repositoryauthor.Author
+	authorRepo AuthorRepository
 }
 
-// New creates a new AuthorService with the provided app and author repository.
-func New(app *service.App, authorRepo *repositoryauthor.Author) *AuthorService {
+// New creates a new AuthorService, wiring its own repository internally.
+func New(app *service.App) *AuthorService {
 	return &AuthorService{
 		App:        app,
-		authorRepo: authorRepo,
+		authorRepo: repositoryauthor.New(app.Log),
 	}
 }
 

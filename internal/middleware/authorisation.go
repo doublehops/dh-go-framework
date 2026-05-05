@@ -3,7 +3,6 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strings"
 
@@ -11,7 +10,6 @@ import (
 
 	apppackage "github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/model/usersession"
-	"github.com/doublehops/dh-go-framework/internal/repository/usersessionrepository"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/usersessionservice"
 )
@@ -36,8 +34,7 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 
 		record := &usersession.UserSession{}
 
-		repo := usersessionrepository.New(app.Log)
-		ss := usersessionservice.New(app, repo)
+		ss := usersessionservice.New(app)
 		err := ss.GetByToken(r.Context(), record, token)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -55,7 +52,6 @@ func AuthMiddleware(app *service.App, next httprouter.Handle) httprouter.Handle 
 		_ = ss.SetLastRequestNow(r.Context(), record)
 
 		r = r.WithContext(context.WithValue(r.Context(), apppackage.UserIDKey, record.UserID))
-		log.Println(">>>>> middleware")
 		next(w, r, ps)
 	}
 }

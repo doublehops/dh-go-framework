@@ -13,7 +13,6 @@ import (
 
 	"github.com/doublehops/dh-go-framework/internal/handlers"
 	model "github.com/doublehops/dh-go-framework/internal/model/user"
-	"github.com/doublehops/dh-go-framework/internal/repository/userrepository"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/doublehops/dh-go-framework/internal/service/userservice"
@@ -22,18 +21,14 @@ import (
 
 // Handle holds the dependencies for the user HTTP handler.
 type Handle struct {
-	repo *userrepository.Repo
 	srv  *userservice.UserService
 	base *handlers.BaseHandler
 }
 
 // New creates a new user Handle with the required dependencies.
 func New(app *service.App) *Handle {
-	repo := userrepository.New(app.Log)
-
 	return &Handle{
-		repo: repo,
-		srv:  userservice.New(app, repo),
+		srv: userservice.New(app),
 		base: &handlers.BaseHandler{
 			Log: app.Log,
 		},

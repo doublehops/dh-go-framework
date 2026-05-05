@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -50,17 +51,21 @@ type DB struct {
 func New(configFile string) (*Config, error) {
 	log.Printf("Loading config from file: %s", configFile)
 
-	err := godotenv.Load()
-	if err != nil {
+	if err := loadEnv(); err != nil {
 		log.Println("Unable to load .env")
 	}
 
 	var c Config
 
-	pwd, _ := os.Getwd()
-	relPath := pwd + "/" + configFile
-	if _, err := os.Stat(relPath); errors.Is(err, os.ErrNotExist) {
-		relPath = pwd + "/../../../" + configFile // test path.
+	var relPath string
+	if filepath.IsAbs(configFile) {
+		relPath = configFile
+	} else {
+		pwd, _ := os.Getwd()
+		relPath = pwd + "/" + configFile
+		if _, err := os.Stat(relPath); errors.Is(err, os.ErrNotExist) {
+			relPath = pwd + "/../../../" + configFile // test path.
+		}
 	}
 
 	f, err := os.ReadFile(relPath) //nolint:gosec
@@ -81,6 +86,28 @@ func New(configFile string) (*Config, error) {
 	}
 
 	return &c, nil
+}
+
+// loadEnv finds and loads the .env file by walking up from the current working directory.
+func loadEnv() error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	for {
+		envPath := filepath.Join(dir, ".env")
+		if _, err := os.Stat(envPath); err == nil {
+			return godotenv.Load(envPath)
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return fmt.Errorf(".env not found")
+		}
+
+		dir = parent
+	}
 }
 
 // resolveEnvInStruct will recursively look through config and replace any values with `ENV:XXX` with the

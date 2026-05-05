@@ -43,8 +43,8 @@ func GetRequester(host string) (Requester, error) {
 	return req, nil
 }
 
-// MakeRequest sends an HTTP request with optional query params and JSON payload, returning the status and body.
-func (r *Requester) MakeRequest(ctx context.Context, method, path string, params map[string]string, payload any) (string, []byte, error) {
+// MakeRequest sends an HTTP request with optional query params, headers, and JSON payload, returning the status and body.
+func (r *Requester) MakeRequest(ctx context.Context, method, path string, params map[string]string, payload any, headers ...map[string]string) (string, []byte, error) {
 	client := &http.Client{}
 	var p io.Reader
 
@@ -70,6 +70,12 @@ func (r *Requester) MakeRequest(ctx context.Context, method, path string, params
 	}
 
 	req.Header.Add("Content-Type", "application/json")
+
+	if len(headers) > 0 {
+		for key, value := range headers[0] {
+			req.Header.Add(key, value)
+		}
+	}
 
 	if params != nil {
 		q := req.URL.Query()
