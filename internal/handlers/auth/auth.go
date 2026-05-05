@@ -68,7 +68,7 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	}
 
 	if passwordValid := h.srv.CheckPasswordHash(record.Password, user.Password); !passwordValid {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.ServerErrResp(req.ErrBadUsernameOrPassword.Error()))
+		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.GeneralErrResp(req.ErrBadUsernameOrPassword.Error(), http.StatusBadRequest))
 
 		return
 	}
@@ -89,18 +89,6 @@ func (h *Handle) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
 }
-
-// func (h *Handle) GetResponse(ctx context.Context, record *model.User) (*model.ResponseUser, error) {
-// 	userResponse := &model.ResponseUser{}
-// 	err := copier.Copy(&userResponse, &record)
-// 	if err != nil {
-// 		h.base.Log.Error(ctx, "error building response object", nil)
-//
-// 		return nil, errors.New("error building response object")
-// 	}
-//
-// 	return userResponse, nil
-// }
 
 // GetResponse builds the successful login response payload from the user session record.
 func (h *Handle) GetResponse(_ context.Context, record *usersession.UserSession) (*model.SuccessfulLoginResponse, error) {
