@@ -70,9 +70,15 @@ func run() error {
 
 	l.Info(ctx, "Starting server on port :"+cfg.Host.Port, nil)
 
-	// todo - This really needs to be replaced with something that allows timeouts.
-	err = http.ListenAndServe(":"+cfg.Host.Port, mux) // nolint:gosec // @todo - remove this exception.
-	if err != nil {
+	srv := &http.Server{
+		Addr:         ":" + cfg.Host.Port,
+		Handler:      mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	if err = srv.ListenAndServe(); err != nil {
 		return fmt.Errorf("unable to start server. %s", err.Error())
 	}
 
