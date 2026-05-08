@@ -1,14 +1,17 @@
 package testtools
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	_ "github.com/go-sql-driver/mysql"
+	gm "github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
 	"github.com/doublehops/dh-go-framework/internal/config"
-	"github.com/doublehops/dh-go-framework/internal/db"
-	"github.com/doublehops/dh-go-framework/internal/logga"
-	migrate "github.com/doublehops/dh-go-framework/internal/migration"
 )
 
 // RunMigrations runs all pending "up" migrations against the database configured in cfg.
@@ -20,30 +23,30 @@ func RunMigrations(cfg *config.Config) error {
 		return fmt.Errorf("RunMigrations: %w", err)
 	}
 
-	logCfg := &config.Logging{
-		Writer:       "stdout",
-		LogLevel:     "DEBUG",
-		OutputFormat: "JSON",
-	}
+	dsn := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true&multiStatements=true",
+		cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.Name)
 
-	l, err := logga.New(logCfg)
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return fmt.Errorf("RunMigrations: failed to create logger: %w", err)
+		return fmt.Errorf("RunMigrations: failed to open db: %w", err)
 	}
+	defer sqlDB.Close()
 
-	database, err := db.New(l, cfg.DB)
+	driver, err := mysql.WithInstance(sqlDB, &mysql.Config{})
 	if err != nil {
-		return fmt.Errorf("RunMigrations: failed to connect to database: %w", err)
+		return fmt.Errorf("RunMigrations: failed to create driver: %w", err)
 	}
 
-	action := &migrate.Action{
-		Action: "up",
-		Number: 9999,
-		DB:     database,
-		Path:   filepath.Join(projectRoot, "migrations"),
+	m, err := gm.NewWithDatabaseInstance(
+		"file://"+filepath.Join(projectRoot, "migrations"),
+		"mysql",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("RunMigrations: failed to create migrator: %w", err)
 	}
 
-	if err := action.Migrate(); err != nil {
+	if err := m.Up(); err != nil && err != gm.ErrNoChange {
 		return fmt.Errorf("RunMigrations: migration failed: %w", err)
 	}
 

@@ -62,6 +62,6 @@ Handler → Service → Repository → DB
 
 **Request/Response** (`internal/request/`) — `GetRequestParams` parses pagination, filtering, and sorting from query params. Filters are declared per-handler as `[]req.FilterRule`; sortable fields are whitelisted. Response helpers (`GetSingleItemResp`, `GetListResp`, `GetValidateErrResp`, etc.) standardise the JSON envelope.
 
-**Migrations** (`migrations/`) — raw SQL files named `<timestamp>_<name>.up.sql` / `.down.sql`. Multiple statements are separated by `------------------` on its own line. Tracking is via a `migrations` table in the DB.
+**Migrations** (`migrations/`) — raw SQL files named `<timestamp>_<name>.up.sql` / `.down.sql` where timestamp is `YYYYMMDDHHmmss` (14 digits, no separators). Multiple statements per file are separated by `;`. Tracking is via a `schema_migrations` table managed by [golang-migrate/migrate](https://github.com/golang-migrate/migrate). If a migration fails mid-run the DB is marked dirty; resolve with `migrate force <version>` before retrying.
 
 **Scaffolding** (`internal/scaffold/`, `cmd/scaffold/`) — reads a live DB table schema and generates the four layers above. Output paths are configured in `cmd/scaffold/config.json`.
