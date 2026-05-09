@@ -15,7 +15,7 @@ lint:
 
 .PHONY: test
 test:
-	go test ./... -cover
+	go test -p 1 ./... -cover
 
 SHELL := /bin/bash
 docker_up:
