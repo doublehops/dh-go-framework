@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // registers the MySQL driver with database/sql
 	gm "github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/source/file" // registers the file source driver with golang-migrate
 
 	"github.com/doublehops/dh-go-framework/internal/config"
 )
@@ -36,14 +36,15 @@ func RunMigrations(cfg *config.Config) error {
 		}
 		drv, err := mysql.WithInstance(sqlDB, &mysql.Config{})
 		if err != nil {
-			sqlDB.Close()
+			_ = sqlDB.Close()
 			return nil, fmt.Errorf("failed to create driver: %w", err)
 		}
 		m, err := gm.NewWithDatabaseInstance(migrationsPath, "mysql", drv)
 		if err != nil {
-			sqlDB.Close()
+			_ = sqlDB.Close()
 			return nil, fmt.Errorf("failed to create migrator: %w", err)
 		}
+
 		return m, nil
 	}
 

@@ -57,30 +57,36 @@ func run() error {
 
 	defer cleanup()
 
-	version, dirty, _ := m.Version() //nolint:errcheck
-	fmt.Printf("current version: %d (dirty: %v)\n", version, dirty)
+	return runAction(m, *action, *number)
+}
 
-	switch *action {
+func runAction(m *gm.Migrate, action string, number int) error {
+	version, dirty, _ := m.Version() //nolint:errcheck
+	log.Printf("current version: %d (dirty: %v)", version, dirty)
+
+	var err error
+
+	switch action {
 	case "up":
-		n := *number
-		if n == 0 {
+		if number == 0 {
 			err = m.Up()
 		} else {
-			err = m.Steps(n)
+			err = m.Steps(number)
 		}
 	case "down":
-		n := *number
+		n := number
 		if n == 0 {
 			n = 1
 		}
 
 		err = m.Steps(-n)
 	default:
-		return fmt.Errorf("unknown action %q — use up, down, or create", *action)
+		return fmt.Errorf("unknown action %q — use up, down, or create", action)
 	}
 
 	if err == gm.ErrNoChange {
-		fmt.Println("no migrations to run")
+		log.Println("no migrations to run")
+
 		return nil
 	}
 
@@ -98,23 +104,23 @@ func newMigrator(cfg *config.Config) (*gm.Migrate, func(), error) {
 
 	driver, err := mysql.WithInstance(sqlDB, &mysql.Config{})
 	if err != nil {
-		sqlDB.Close()
+		_ = sqlDB.Close()
 		return nil, nil, fmt.Errorf("error creating mysql driver: %w", err)
 	}
 
 	dir, err := os.Getwd()
 	if err != nil {
-		sqlDB.Close()
+		_ = sqlDB.Close()
 		return nil, nil, fmt.Errorf("error getting working directory: %w", err)
 	}
 
 	m, err := gm.NewWithDatabaseInstance("file://"+dir+"/migrations", "mysql", driver)
 	if err != nil {
-		sqlDB.Close()
+		_ = sqlDB.Close()
 		return nil, nil, fmt.Errorf("error creating migrator: %w", err)
 	}
 
-	return m, func() { sqlDB.Close() }, nil
+	return m, func() { _ = sqlDB.Close() }, nil
 }
 
 func createMigration(name string) error {
@@ -126,15 +132,14 @@ func createMigration(name string) error {
 	ts := time.Now().Format("20060102150405")
 	base := fmt.Sprintf("%s/migrations/%s_%s", dir, ts, name)
 
-	if err := os.WriteFile(base+".up.sql", []byte("-- Write your up migration SQL here\n"), 0600); err != nil {
+	if err := os.WriteFile(base+".up.sql", []byte("-- Write your up migration SQL here\n"), 0o600); err != nil {
 		return fmt.Errorf("error creating up migration file: %w", err)
 	}
-
-	if err := os.WriteFile(base+".down.sql", []byte("-- Write your rollback SQL here\n"), 0600); err != nil {
+	if err := os.WriteFile(base+".down.sql", []byte("-- Write your rollback SQL here\n"), 0o600); err != nil {
 		return fmt.Errorf("error creating down migration file: %w", err)
 	}
 
-	fmt.Printf("created:\n  %s.up.sql\n  %s.down.sql\n", base, base)
+	log.Printf("created:\n  %s.up.sql\n  %s.down.sql", base, base)
 
 	return nil
 }
