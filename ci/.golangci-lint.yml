@@ -55,6 +55,8 @@ linters:
         - pattern: 'ioutil\.*'
     funlen:
       lines: 120
+    goconst:
+      ignore-tests: true
     gosec:
       excludes:
         - G101

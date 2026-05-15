@@ -10,6 +10,16 @@ import (
 	"github.com/doublehops/dh-go-framework/test/testbuffer"
 )
 
+const (
+	logFormatJSON   = "json"
+	logWriterStdout = "stdout"
+	logWriterTest   = "testwriter"
+	logLevelDebug   = "DEBUG"
+	logLevelInfo    = "INFO"
+	logLevelWarn    = "WARN"
+	logLevelError   = "ERROR"
+)
+
 // ErrInvalidLogWriter and ErrInvalidLogLevelValue are errors returned when the logger config is invalid.
 var (
 	ErrInvalidLogWriter     = errors.New("a valid writer was not defined in configuration")
@@ -42,7 +52,7 @@ func New(cfg *config.Logging) (*Logga, error) {
 	var logger *slog.Logger
 
 	switch cfg.OutputFormat {
-	case "json":
+	case logFormatJSON:
 		logger = slog.New(slog.NewJSONHandler(writer, &slog.HandlerOptions{Level: logLevel}))
 	case "text":
 		logger = slog.New(slog.NewTextHandler(writer, &slog.HandlerOptions{Level: logLevel}))
@@ -55,11 +65,11 @@ func New(cfg *config.Logging) (*Logga, error) {
 
 func getWriterFromConfig(configuredWriter string) (io.Writer, error) {
 	switch configuredWriter {
-	case "stdout":
+	case logWriterStdout:
 		return os.Stdout, nil
 	case "": // Default to stdout if none is defined.
 		return os.Stdout, nil
-	case "testwriter": // Used for testing.
+	case logWriterTest: // Used for testing.
 		return testbuffer.TestBuffer{}, nil
 	}
 
@@ -68,13 +78,13 @@ func getWriterFromConfig(configuredWriter string) (io.Writer, error) {
 
 func getLogLevelFromConfig(configuredLevel string) (slog.Level, error) {
 	switch configuredLevel {
-	case "DEBUG":
+	case logLevelDebug:
 		return slog.LevelDebug, nil
-	case "INFO":
+	case logLevelInfo:
 		return slog.LevelInfo, nil
-	case "WARN":
+	case logLevelWarn:
 		return slog.LevelWarn, nil
-	case "ERROR":
+	case logLevelError:
 		return slog.LevelError, nil
 	}
 
