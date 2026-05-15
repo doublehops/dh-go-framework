@@ -55,11 +55,14 @@ linters:
         - pattern: 'ioutil\.*'
     funlen:
       lines: 120
-    goconst:
-      ignore-tests: true
     gosec:
       excludes:
         - G101
+  exclusions:
+    rules:
+      - path: "_test.go"
+        linters:
+          - goconst
 
 formatters:
   enable:
