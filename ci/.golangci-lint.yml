@@ -58,6 +58,11 @@ linters:
     gosec:
       excludes:
         - G101
+  exclusions:
+    rules:
+      - path: "_test.go"
+        linters:
+          - goconst
 
 formatters:
   enable:

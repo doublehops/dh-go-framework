@@ -18,6 +18,11 @@ var (
 	NotFoundMsg = ErrorMessage{"message": "not found"}
 )
 
+const (
+	errResponseName   = "there was an error processing request"
+	errResponseStatus = "error"
+)
+
 // ErrorMessage is a map of field names to error message strings for API error responses.
 type ErrorMessage map[string]string
 
@@ -31,10 +36,10 @@ func GetSingleItemResp(data interface{}) SingleItemResp {
 // GeneralErrResp builds a general error response with the provided message and HTTP status code.
 func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
 	return GeneralErrorResp{
-		Name:    "there was an error processing request",
+		Name:    errResponseName,
 		Message: msg,
 		Code:    statusCode,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }
@@ -42,10 +47,10 @@ func GeneralErrResp(msg string, statusCode int) GeneralErrorResp {
 // ServerErrResp builds a 500 internal server error response.
 func ServerErrResp(msg string) GeneralErrorResp {
 	return GeneralErrorResp{
-		Name:    "there was an error processing request",
+		Name:    errResponseName,
 		Message: msg,
 		Code:    http.StatusInternalServerError,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }
@@ -53,10 +58,10 @@ func ServerErrResp(msg string) GeneralErrorResp {
 // GetNotAuthorisedResp builds a 403 forbidden response.
 func GetNotAuthorisedResp() GeneralErrorResp {
 	return GeneralErrorResp{
-		Name:    "there was an error processing request",
+		Name:    errResponseName,
 		Message: ErrNotAuthorised.Error(),
 		Code:    http.StatusForbidden,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }
@@ -67,7 +72,7 @@ func GetNotFoundResp() GeneralErrorResp {
 		Name:    ErrRecordNotFound.Error(),
 		Message: ErrRecordNotFound.Error(),
 		Code:    http.StatusNotFound,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }
@@ -92,7 +97,7 @@ func GetValidateErrResp(errors ErrMsgs, errs ...string) GeneralErrorResp {
 		Name:    "Validation failed",
 		Message: err,
 		Code:    http.StatusBadRequest,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  errors,
 	}
 }
@@ -103,7 +108,7 @@ func UnableToParseResp() GeneralErrorResp {
 		Name:    "Parsing error",
 		Message: ErrCouldNotParseRequest.Error(),
 		Code:    http.StatusBadRequest,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }
@@ -114,7 +119,7 @@ func ErrorProcessingRequestResp() GeneralErrorResp {
 		Name:    "Parsing error",
 		Message: ErrProcessingRequest.Error(),
 		Code:    http.StatusInternalServerError,
-		Status:  "error",
+		Status:  errResponseStatus,
 		Errors:  nil,
 	}
 }

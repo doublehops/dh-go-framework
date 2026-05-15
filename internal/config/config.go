@@ -115,7 +115,7 @@ func loadEnv() error {
 func resolveEnvInStruct(s interface{}) {
 	val := reflect.ValueOf(s)
 
-	if val.Kind() != reflect.Ptr || val.Elem().Kind() != reflect.Struct {
+	if val.Kind() != reflect.Pointer || val.Elem().Kind() != reflect.Struct {
 		return
 	}
 	val = val.Elem()

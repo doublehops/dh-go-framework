@@ -14,8 +14,8 @@ The basic requirements from a RESTful API framework are:
 - ~~easy filtering in collection requests~~
 - ~~sorting and ordering in collection requests~~
 - ~~CRUD scaffolding~~
-- user model, login and authentication, etc...
-- ci/cd
+- ~~user model, login and authentication, etc...~~
+- ~~ci/cd~~
 - documentation
 
 Good to have:
@@ -29,12 +29,43 @@ Good to have:
 - `./internal/models/` # Contain data models
 - `./internal/service/` # Service layer that contains business logic of each model/endpoints
 - `./internal/repository/` # Contains data retrieval functions
-- `./internal/migrations/` # Contains database migration files
+- `./migrations/` # Contains database migration files
 - `./internal/middleware/` # Contains API middleware
 - `./config.json` # Application configuration
 
-## Migration
-Migration will run SQL commands to update the database. It has its own [README](README_MIGRATION.md).
+## Migrations
+
+Migration files live in `./migrations/` and are named `<timestamp>_<name>.up.sql` / `<timestamp>_<name>.down.sql` where the timestamp is 14 digits (`YYYYMMDDHHmmss`). Multiple SQL statements in one file are separated by `;`. Run state is tracked in a `schema_migrations` table managed by [golang-migrate/migrate](https://github.com/golang-migrate/migrate).
+
+**Create a new migration:**
+```bash
+go run ./cmd/migrate/migrate.go -action create -name <migration_name>
+```
+
+**Run all pending migrations:**
+```bash
+go run ./cmd/migrate/migrate.go -action up
+```
+
+**Run a specific number of migrations:**
+```bash
+go run ./cmd/migrate/migrate.go -action up -number 1
+```
+
+**Rollback one migration:**
+```bash
+go run ./cmd/migrate/migrate.go -action down
+```
+
+**Rollback a specific number of migrations:**
+```bash
+go run ./cmd/migrate/migrate.go -action down -number 2
+```
+
+If a migration fails mid-run the database is marked dirty. Resolve with:
+```bash
+migrate force <version>
+```
 
 ## Scaffolding
 Scaffolding is a tool that will read the table definition in the database and create the CRUD routes, handlers, service and

@@ -2,17 +2,19 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	gm "github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
-	"github.com/doublehops/dh-go-framework/internal/db"
-	"github.com/doublehops/dh-go-framework/internal/logga"
-	migrate "github.com/doublehops/dh-go-framework/internal/migration"
 )
 
 func main() {
@@ -23,68 +25,121 @@ func main() {
 }
 
 func run() error {
-	var args migrate.Action
-
-	flag.StringVar(&args.Action, "action", "", "the intended action")
-	flag.StringVar(&args.Name, "name", "", "the name of the migration")
-	flag.IntVar(&args.Number, "number", 0, "The number of migrations to run")
-
-	configFile := flag.String("config", "config.json", "Config file to use")
+	action := flag.String("action", "", "action: up, down, create")
+	name := flag.String("name", "", "migration name (required for create)")
+	number := flag.Int("number", 0, "number of migrations to run (0 = all for up, 1 for down)")
+	configFile := flag.String("config", "config.json", "config file")
 	flag.Parse()
 
-	args = setFlags(args)
+	if *action == "" {
+		fmt.Fprintln(os.Stderr, "Usage: -action [up|down|create] [-number N] [-name <name>]")
+		os.Exit(1)
+	}
 
-	// Setup config.
+	if *action == "create" {
+		if *name == "" {
+			fmt.Fprintln(os.Stderr, "-name is required for the create action")
+			os.Exit(1)
+		}
+
+		return createMigration(*name)
+	}
+
 	cfg, err := config.New(*configFile)
 	if err != nil {
-		return fmt.Errorf("error starting main. %s", err.Error())
+		return fmt.Errorf("error loading config: %w", err)
 	}
 
-	// Setup logger.
-	l, err := logga.New(&cfg.Logging)
+	m, cleanup, err := newMigrator(cfg)
 	if err != nil {
-		return fmt.Errorf("error configuring logger. %s", err.Error())
+		return err
 	}
 
-	// Setup db connection.
-	DB, err := db.New(l, cfg.DB)
+	defer cleanup()
+
+	return runAction(m, *action, *number)
+}
+
+func runAction(m *gm.Migrate, action string, number int) error {
+	version, dirty, _ := m.Version() //nolint:errcheck
+	log.Printf("current version: %d (dirty: %v)", version, dirty)
+
+	var err error
+
+	switch action {
+	case "up":
+		if number == 0 {
+			err = m.Up()
+		} else {
+			err = m.Steps(number)
+		}
+	case "down":
+		n := number
+		if n == 0 {
+			n = 1
+		}
+
+		err = m.Steps(-n)
+	default:
+		return fmt.Errorf("unknown action %q — use up, down, or create", action)
+	}
+
+	if err == gm.ErrNoChange {
+		log.Println("no migrations to run")
+
+		return nil
+	}
+
+	return err
+}
+
+func newMigrator(cfg *config.Config) (*gm.Migrate, func(), error) {
+	dsn := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true&multiStatements=true",
+		cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.Name)
+
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return fmt.Errorf("error creating database connection. %s", err.Error())
+		return nil, nil, fmt.Errorf("error opening database: %w", err)
+	}
+
+	driver, err := mysql.WithInstance(sqlDB, &mysql.Config{})
+	if err != nil {
+		_ = sqlDB.Close()
+		return nil, nil, fmt.Errorf("error creating mysql driver: %w", err)
 	}
 
 	dir, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("there was an error with os.Getwd(). %s", err.Error())
+		_ = sqlDB.Close()
+		return nil, nil, fmt.Errorf("error getting working directory: %w", err)
 	}
 
-	args.Path = dir + "/migrations"
-	args.DB = DB
-
-	err = args.Migrate()
+	m, err := gm.NewWithDatabaseInstance("file://"+dir+"/migrations", "mysql", driver)
 	if err != nil {
-		return fmt.Errorf("there was an error initialising migration. %s", err.Error())
+		_ = sqlDB.Close()
+		return nil, nil, fmt.Errorf("error creating migrator: %w", err)
 	}
 
-	return nil
+	return m, func() { _ = sqlDB.Close() }, nil
 }
 
-// setFlags will check that the flags received are valid and assign default ones if not supplied.
-func setFlags(args migrate.Action) migrate.Action {
-	if found := args.IsValidAction(args.Action); !found {
-		args.PrintHelp()
+func createMigration(name string) error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("error getting working directory: %w", err)
 	}
 
-	if args.Action == "create" && args.Name == "" {
-		args.PrintHelp()
+	ts := time.Now().Format("20060102150405")
+	base := fmt.Sprintf("%s/migrations/%s_%s", dir, ts, name)
+
+	if err := os.WriteFile(base+".up.sql", []byte("-- Write your up migration SQL here\n"), 0o600); err != nil {
+		return fmt.Errorf("error creating up migration file: %w", err)
+	}
+	if err := os.WriteFile(base+".down.sql", []byte("-- Write your rollback SQL here\n"), 0o600); err != nil {
+		return fmt.Errorf("error creating down migration file: %w", err)
 	}
 
-	if args.Action == "up" && args.Number == 0 {
-		args.Number = 9999 // run them all if none defined.
-	}
+	log.Printf("created:\n  %s.up.sql\n  %s.down.sql", base, base)
 
-	if args.Action == "down" && args.Number == 0 {
-		args.Number = 1 // run just one if none defined.
-	}
-
-	return args
+	return nil
 }
