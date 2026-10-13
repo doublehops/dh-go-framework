@@ -22,8 +22,8 @@ func RunMigrations(cfg *config.Config) error {
 		return fmt.Errorf("RunMigrations: %w", err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true&multiStatements=true",
-		cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.Name)
+	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true&multiStatements=true",
+		cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.PortOrDefault(), cfg.DB.Name)
 
 	migrationsPath := "file://" + filepath.Join(projectRoot, "migrations")
 

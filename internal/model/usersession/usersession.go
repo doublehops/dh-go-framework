@@ -7,8 +7,8 @@ import (
 
 // UserSession represents an authenticated user session with token and expiry tracking.
 type UserSession struct {
-	ID          int32      `json:"id" db:"id"`
-	UserID      int32      `json:"userId" db:"user_id"`
+	ID          string     `json:"id" db:"id"`
+	UserID      string     `json:"userId" db:"user_id"`
 	Token       string     `json:"token" db:"token"`
 	LastRequest *time.Time `json:"lastRequest" db:"last_request"`
 	CreatedAt   *time.Time `json:"createdAt" db:"created_at"`

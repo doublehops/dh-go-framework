@@ -77,6 +77,26 @@ func TestGetLogLevel(t *testing.T) {
 			expectedError:   nil,
 		},
 		{
+			// Parsing is case-insensitive: the value comes from an env var and an unrecognised
+			// one is a fatal startup error, so casing must not decide whether the app boots.
+			name:            "successLowercase",
+			configuredLevel: "info",
+			expectedLevel:   slog.LevelInfo,
+			expectedError:   nil,
+		},
+		{
+			name:            "successMixedCaseAndWhitespace",
+			configuredLevel: "  Debug ",
+			expectedLevel:   slog.LevelDebug,
+			expectedError:   nil,
+		},
+		{
+			name:            "failUnrecognisedValueStillRejected",
+			configuredLevel: "verbose",
+			expectedLevel:   slog.LevelInfo,
+			expectedError:   ErrInvalidLogLevelValue,
+		},
+		{
 			name:            "successWARN",
 			configuredLevel: "WARN",
 			expectedLevel:   slog.LevelWarn,
@@ -141,7 +161,7 @@ func TestSendLogMessage(t *testing.T) {
 			ctxArgs:    map[interface{}]interface{}{},
 			customArgs: KVPs{},
 			expectedOutput: logOutput{
-				Level: "INFO",
+				Level: "info",
 				Msg:   basicMessage,
 			},
 		},
@@ -158,7 +178,7 @@ func TestSendLogMessage(t *testing.T) {
 			},
 			customArgs: KVPs{},
 			expectedOutput: logOutput{
-				Level:   "INFO",
+				Level:   "info",
 				Msg:     basicMessage,
 				TraceID: "trace-99876",
 				UserID:  123,
@@ -176,7 +196,7 @@ func TestSendLogMessage(t *testing.T) {
 				"Age":  33,
 			},
 			expectedOutput: logOutput{
-				Level: "INFO",
+				Level: "info",
 				Msg:   basicMessage,
 				Name:  "JohnS",
 				Age:   33,

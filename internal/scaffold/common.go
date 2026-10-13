@@ -108,10 +108,11 @@ func (s *Scaffold) writeFile(src, dest string, tmpl Model) error {
 		return errors.New(e)
 	}
 
-	f, err = os.Create(dest) //nolint:gosec
+	out, err := os.Create(dest) //nolint:gosec
 	if err != nil {
 		return errors.New("unable to open destination. " + err.Error())
 	}
+	defer func() { _ = out.Close() }()
 
 	t, err := template.New("model").Parse(string(source))
 	if err != nil {
@@ -120,9 +121,14 @@ func (s *Scaffold) writeFile(src, dest string, tmpl Model) error {
 
 		return errors.New(e)
 	}
-	err = t.Execute(f, tmpl)
+	err = t.Execute(out, tmpl)
 	if err != nil {
 		return errors.New("unable to write template. " + err.Error())
+	}
+
+	// Close before gofmt rewrites the file in place.
+	if err = out.Close(); err != nil {
+		return errors.New("unable to close destination. " + err.Error())
 	}
 
 	if err = Gofmt(dest); err != nil {

@@ -28,6 +28,13 @@ type TestCredentials struct {
 // CreateTestUser creates a user and session directly via the service layer, bypassing HTTP.
 // Returns the Authorization header value ("Bearer <token>") ready to pass to MakeRequest.
 func CreateTestUser(cfg *config.Config, email, password string) (*usermodel.User, string, error) {
+	return CreateTestUserWithRole(cfg, email, password, "")
+}
+
+// CreateTestUserWithRole creates a user with the given global role ID (org_admin/master_admin,
+// see internal/model/userrole) and a session, bypassing HTTP. Pass "" for no special role.
+// Returns the Authorization header value ("Bearer <token>") ready to pass to MakeRequest.
+func CreateTestUserWithRole(cfg *config.Config, email, password, roleID string) (*usermodel.User, string, error) {
 	logCfg := &config.Logging{
 		Writer:       "stdout",
 		LogLevel:     "DEBUG",
@@ -57,21 +64,22 @@ func CreateTestUser(cfg *config.Config, email, password string) (*usermodel.User
 		Name:         "testuser",
 		EmailAddress: email,
 		Password:     password,
+		RoleID:       roleID,
 	}
 
-	record, err := userSvc.Create(ctx, payload)
+	ur, err := userSvc.NewRecord(payload).Create(ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("CreateTestUser: failed to create user: %w", err)
 	}
 
 	sessionSvc := usersessionservice.New(app)
 
-	session, err := sessionSvc.Create(ctx, record)
+	session, err := sessionSvc.Create(ctx, ur.Record)
 	if err != nil {
 		return nil, "", fmt.Errorf("CreateTestUser: failed to create session: %w", err)
 	}
 
-	return record, "Bearer " + session.Token, nil
+	return ur.Record, "Bearer " + session.Token, nil
 }
 
 // GetAuthToken logs in with the given credentials and returns the Authorization header value

@@ -2,27 +2,26 @@ package userservice
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
-
-	model "github.com/doublehops/dh-go-framework/internal/model/user"
 )
 
 // EmailAddressAlreadyExists will return bool for existence of email address.
 func (s *UserService) EmailAddressAlreadyExists(ctx context.Context, emailAddress string) (bool, error) {
-	record := &model.User{}
-	if err := s.GetByEmailAddress(ctx, record, emailAddress); err != nil {
+	record, err := s.GetByEmailAddress(ctx, emailAddress)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+
+	if err != nil {
 		s.Log.Error(ctx, "error retrieving record by email address"+err.Error(), nil)
 
 		return false, errors.New("error retrieving record by email address")
 	}
 
-	if record.EmailAddress != "" {
-		return true, nil
-	}
-
-	return false, nil
+	return record.Record.EmailAddress != "", nil
 }
 
 // HashPassword hashes a password using bcrypt.

@@ -2,7 +2,7 @@ package {{.LowerCase}}repository
 
 var insertRecordSQL = `INSERT INTO {{.Name}} (
 {{.SQLCreate}}
-	  ) VALUES (
+	) VALUES (
 {{.SQLCreateQs}}
 	)
 `
@@ -13,23 +13,24 @@ var updateRecordSQL = `UPDATE {{.Name}} SET
 `
 
 var deleteRecordSQL = `UPDATE {{.Name}} SET
-    updated_at=?,
-    deleted_at=?
+	updated_by=:updated_by,
+	updated_at=:updated_at,
+	deleted_at=:deleted_at
+	WHERE id=:id
+`
+
+var selectByIDQuery = `SELECT
+{{.SQLSelect}}
+	FROM {{.Name}}
 	WHERE id=?
+	AND deleted_at IS NULL`
+
+var selectCollectionQuery = `SELECT
+{{.SQLSelect}}
+	FROM {{.Name}}
 `
 
-var selectByIDQuery = `SELECT 
-{{.SQLSelect}}
-    FROM {{.Name}}
-    WHERE id=?
-    AND deleted_at IS NULL`
-
-var selectCollectionQuery = `SELECT 
-{{.SQLSelect}}
-    FROM {{.Name}}
-`
-
-var selectCollectionCountQuery = `SELECT 
-    COUNT(*) count
-    FROM {{.Name}}
+var selectCollectionCountQuery = `SELECT
+	COUNT(*) count
+	FROM {{.Name}}
 `

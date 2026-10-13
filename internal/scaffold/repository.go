@@ -4,7 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/doublehops/go-common/str"
 )
+
+// notUpdatedColumns are never written by an Update: the key, creation audit fields and the
+// soft-delete marker (which only Delete sets).
+var notUpdatedColumns = []string{"id", "created_by", "created_at", "deleted_at"}
 
 const (
 	repositoryTemplate    = "./internal/scaffold/templates/repository.tmpl"
@@ -93,12 +99,16 @@ func (s *Scaffold) setColumnSQLParams(m *Model) {
 	for _, col := range m.Columns {
 		selectStmt += fmt.Sprintf("\t%s,\n", col.Original)
 
-		if col.Original == "id" { // Don't include ID field in queries.
+		// The repository sets a UUID on id before inserting; deleted_at is only set by Delete.
+		if col.Original != "deleted_at" {
+			insertCols += fmt.Sprintf("\t%s,\n", col.Original)
+			insertQs += fmt.Sprintf("\t:%s,\n", col.Original)
+		}
+
+		if str.SliceContains(col.Original, notUpdatedColumns) {
 			continue
 		}
 
-		insertCols += fmt.Sprintf("\t%s,\n", col.Original)
-		insertQs += fmt.Sprintf("\t:%s,\n", col.Original)
 		updateStmt += fmt.Sprintf("\t%s=:%s,\n", col.Original, col.Original)
 	}
 

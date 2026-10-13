@@ -2,7 +2,9 @@
 package userrepository
 
 var insertRecordSQL = `INSERT INTO user (
+	id,
 	organisation_id,
+	role_id,
 	name,
 	email_address,
 	password,
@@ -11,7 +13,9 @@ var insertRecordSQL = `INSERT INTO user (
 	updated_at,
 	deleted_at
 	  ) VALUES (
+	:id,
 	:organisation_id,
+	:role_id,
 	:name,
 	:email_address,
 	:password,
@@ -24,17 +28,16 @@ var insertRecordSQL = `INSERT INTO user (
 
 var updateRecordSQL = `UPDATE user SET
 	name=:name,
-	is_active=:is_active,
-	created_at=:created_at,
-	updated_at=:updated_at,
-	deleted_at=:deleted_at
+	updated_by=:updated_by,
+	updated_at=:updated_at
 	WHERE id=:id
 `
 
 var deleteRecordSQL = `UPDATE user SET
-    updated_at=?,
-    deleted_at=?
-	WHERE id=?
+	updated_by=:updated_by,
+	updated_at=:updated_at,
+	deleted_at=:deleted_at
+	WHERE id=:id
 `
 
 var selectByIDQuery = `SELECT 
@@ -46,7 +49,8 @@ var selectByIDQuery = `SELECT
 var selectByEmailAddressQuery = `SELECT 
 	*
     FROM user
-    WHERE email_address=?`
+    WHERE email_address=?
+    AND deleted_at IS NULL`
 
 var selectCollectionQuery = `SELECT 
 	*

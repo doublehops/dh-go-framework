@@ -15,8 +15,8 @@
 
 	{{.CamelCase}}Handle := {{.LowerCase}}.New(app)
 
-	{{.CamelCase}}Group := group.New("/{{.KebabCase}}")
-	{{.CamelCase}}Group.GET({{.CamelCase}}Handle.GetAll).Middleware(middleware.AuthMiddleware)
+	{{.CamelCase}}Group := group.New("/{{.KebabCase}}").Middleware(authMW)
+	{{.CamelCase}}Group.GET({{.CamelCase}}Handle.GetAll)
 	{{.CamelCase}}Group.Children(
 		group.New("/:id").GET({{.CamelCase}}Handle.GetByID),
 		group.New("").POST({{.CamelCase}}Handle.Create),
@@ -34,11 +34,17 @@
 
 	------------------------------------------------------
 
-	You should now be able to run the cURL queries to test it. You may want to remove the authorization checks in the handlers or
-	you may receive an authorization 403 error.
+	Next, fill in {{.PascalCase}}Record.Update in internal/service/{{.LowerCase}}service/{{.LowerCase}}record.go
+	(it copies no fields until you do), review the generated validation rules, and adjust
+	CanBeAccessedBy if creator-or-admin isn't the right access rule.
 
-	- Create record: curl -X POST http://localhost:8088/v1/{{.KebabCase}} --data '{"key: "value"}'
-	- List records: curl -X GET http://localhost:8088/v1/{{.KebabCase}}
-	- Get record: curl -X GET http://localhost:8088/v1/{{.KebabCase}}/1
-	- Update record: curl -X PUT http://localhost:8088/v1/{{.KebabCase}}/1 --data '{"key: "value"}'
-	- Delete record: curl -X DELETE http://localhost:8088/v1/{{.KebabCase}}/1'
+	To restrict the whole group to certain global roles, add RequireRoles inside authMW:
+	group.New("/{{.KebabCase}}").Middleware(authMW, middleware.RequireRoles(userrole.OrganisationAdminID, userrole.MasterAdminID))
+
+	You should now be able to run the cURL queries to test it. Get a token from POST /v1/auth/login first.
+
+	- Create record: curl -X POST http://localhost:8088/v1/{{.KebabCase}} -H "Authorization: Bearer $TOKEN" --data '{"key": "value"}'
+	- List records: curl -X GET http://localhost:8088/v1/{{.KebabCase}} -H "Authorization: Bearer $TOKEN"
+	- Get record: curl -X GET http://localhost:8088/v1/{{.KebabCase}}/$ID -H "Authorization: Bearer $TOKEN"
+	- Update record: curl -X PUT http://localhost:8088/v1/{{.KebabCase}}/$ID -H "Authorization: Bearer $TOKEN" --data '{"key": "value"}'
+	- Delete record: curl -X DELETE http://localhost:8088/v1/{{.KebabCase}}/$ID -H "Authorization: Bearer $TOKEN"

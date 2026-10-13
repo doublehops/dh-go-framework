@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
@@ -28,20 +29,15 @@ func New(logger *logga.Logga) *Repo {
 
 // Create inserts a new user session record within the provided transaction.
 func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error {
-	result, err := tx.NamedExec(insertRecordSQL, record)
+	record.ID = uuid.New().String()
+
+	_, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
 		r.l.Error(ctx, errMsg, nil)
 
 		return errors.New(errMsg)
 	}
-
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	record.ID = int32(lastInsertID) //nolint:gosec
 
 	return nil
 }
@@ -73,12 +69,12 @@ func (r *Repo) Delete(ctx context.Context, tx *sqlx.Tx, record *usersession.User
 }
 
 // GetByID retrieves a user session record by its primary key.
-func (r *Repo) GetByID(ctx context.Context, db *sqlx.DB, id int32, record *usersession.UserSession) error {
+func (r *Repo) GetByID(ctx context.Context, db *sqlx.DB, id string, record *usersession.UserSession) error {
 	err := db.Get(record, selectByIDQuery, id)
 	if err != nil {
 		r.l.Error(ctx, service.UnableToRetrieveRecord, logga.KVPs{"ID": id})
 
-		return fmt.Errorf("%s %d", service.UnableToRetrieveRecord, id)
+		return fmt.Errorf("%s %s", service.UnableToRetrieveRecord, id)
 	}
 
 	return nil
@@ -97,12 +93,12 @@ func (r *Repo) GetByToken(ctx context.Context, db *sqlx.DB, token string, record
 }
 
 // GetByUserID retrieves a user session by the associated user ID.
-func (r *Repo) GetByUserID(ctx context.Context, db *sqlx.DB, userID int32, record *usersession.UserSession) error {
+func (r *Repo) GetByUserID(ctx context.Context, db *sqlx.DB, userID string, record *usersession.UserSession) error {
 	err := db.Get(record, selectByUserIDQuery, userID)
 	if err != nil {
 		r.l.Error(ctx, service.UnableToRetrieveRecord, logga.KVPs{"userID": userID})
 
-		return fmt.Errorf("%s userID %d", service.UnableToRetrieveRecord, userID)
+		return fmt.Errorf("%s userID %s", service.UnableToRetrieveRecord, userID)
 	}
 
 	return nil

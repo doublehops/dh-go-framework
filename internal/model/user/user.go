@@ -12,7 +12,8 @@ import (
 // User is the full database model for a user record.
 type User struct {
 	model.BaseModel
-	OrganisationID      int        `json:"organisationId" db:"organisation_id"`
+	OrganisationID      string     `json:"organisationId" db:"organisation_id"`
+	RoleID              string     `json:"roleId" db:"role_id"`
 	Name                string     `json:"name" db:"name"`
 	EmailAddress        string     `json:"emailAddress" db:"email_address"`
 	EmailVerified       bool       `json:"emailVerified" db:"email_verified"`
@@ -26,7 +27,8 @@ type User struct {
 // ResponseUser is a pruned user model for API responses, omitting sensitive fields.
 type ResponseUser struct {
 	model.BaseModel
-	OrganisationID int    `json:"organisationId"`
+	OrganisationID string `json:"organisationId"`
+	RoleID         string `json:"roleId"`
 	Name           string `json:"name"`
 	EmailAddress   string `json:"emailAddress"`
 	EmailVerified  bool   `json:"emailVerified"`
@@ -54,16 +56,16 @@ type UpdateUser struct {
 
 func (u *User) getUserCreateRules() []validator.Rule {
 	return []validator.Rule{
-		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},          //nolint:govet
-		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.EmailAddress("")}}, //nolint:govet
-		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}},  //nolint:govet
+		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 35, "")}},          //nolint:govet
+		{"emailAddress", u.EmailAddress, true, []validator.ValidationFuncs{validator.EmailAddress("")}},  //nolint:govet
+		{"password", u.Password, true, []validator.ValidationFuncs{validator.LengthInRange(8, 128, "")}}, //nolint:govet
 
 	}
 }
 
 func (u *User) getUserUpdateRules() []validator.Rule {
 	return []validator.Rule{
-		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, "")}}, //nolint:govet
+		{"name", u.Name, true, []validator.ValidationFuncs{validator.LengthInRange(3, 35, "")}}, //nolint:govet
 	}
 }
 

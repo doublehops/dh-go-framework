@@ -1,10 +1,11 @@
 {
   "host": {
-    "port": "ENV:PORT"
+    "port": "ENV:PORT",
+    "corsOrigin": "ENV:CORS_ORIGIN"
   },
   "logging": {
     "writer": "stdout",
-    "logLevel": "DEBUG",
+    "logLevel": "debug",
     "outputFormat": "text"
   },
   "database": {

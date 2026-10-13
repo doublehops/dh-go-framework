@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/test/testbuffer"
@@ -51,13 +52,15 @@ func New(cfg *config.Logging) (*Logga, error) {
 
 	var logger *slog.Logger
 
+	opts := &slog.HandlerOptions{Level: logLevel, ReplaceAttr: lowercaseLevel}
+
 	switch cfg.OutputFormat {
 	case logFormatJSON:
-		logger = slog.New(slog.NewJSONHandler(writer, &slog.HandlerOptions{Level: logLevel}))
+		logger = slog.New(slog.NewJSONHandler(writer, opts))
 	case "text":
-		logger = slog.New(slog.NewTextHandler(writer, &slog.HandlerOptions{Level: logLevel}))
+		logger = slog.New(slog.NewTextHandler(writer, opts))
 	default:
-		logger = slog.New(slog.NewTextHandler(writer, &slog.HandlerOptions{Level: logLevel}))
+		logger = slog.New(slog.NewTextHandler(writer, opts))
 	}
 
 	return &Logga{Log: logger}, nil
@@ -76,8 +79,13 @@ func getWriterFromConfig(configuredWriter string) (io.Writer, error) {
 	return nil, ErrInvalidLogWriter
 }
 
+// getLogLevelFromConfig maps a configured level name onto a slog.Level.
+//
+// Matching is case-insensitive on purpose. The value arrives from an environment variable, an
+// unrecognised one is a fatal startup error, and "info" versus "INFO" is not a distinction anyone
+// should have to remember at deploy time.
 func getLogLevelFromConfig(configuredLevel string) (slog.Level, error) {
-	switch configuredLevel {
+	switch strings.ToUpper(strings.TrimSpace(configuredLevel)) {
 	case logLevelDebug:
 		return slog.LevelDebug, nil
 	case logLevelInfo:
@@ -89,4 +97,22 @@ func getLogLevelFromConfig(configuredLevel string) (slog.Level, error) {
 	}
 
 	return slog.LevelInfo, ErrInvalidLogLevelValue
+}
+
+// lowercaseLevel renders the level as "info" rather than slog default "INFO".
+//
+// Lowercase is the prevailing convention for structured logs - zerolog, zap and logrus all emit
+// it, and Elastic Common Schema specifies log.level in lowercase - which matters because these
+// logs are shipped to CloudWatch where consistency with other tooling makes filtering easier.
+// slog is the outlier here, so this normalises it rather than the other way round.
+func lowercaseLevel(_ []string, a slog.Attr) slog.Attr {
+	if a.Key != slog.LevelKey {
+		return a
+	}
+
+	if level, ok := a.Value.Any().(slog.Level); ok {
+		a.Value = slog.StringValue(strings.ToLower(level.String()))
+	}
+
+	return a
 }

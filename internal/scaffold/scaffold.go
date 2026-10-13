@@ -58,9 +58,11 @@ type Model struct {
 
 	ModelStructProperties string
 	ValidationRules       string
-	InsertFields          string
-	UpdateFields          string
-	ScanFields            string
+	// HasTime is true when a model property is a *time.Time, so the template imports "time".
+	HasTime      bool
+	InsertFields string
+	UpdateFields string
+	ScanFields   string
 
 	Columns []column
 

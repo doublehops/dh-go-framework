@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/doublehops/dh-go-framework/internal/model/user"
 	"github.com/doublehops/dh-go-framework/internal/model/usersession"
 	"github.com/doublehops/dh-go-framework/internal/repository/usersessionrepository"
@@ -18,19 +16,13 @@ import (
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
-const sessionTimeout = 24 * time.Hour
-
-// SessionRepository defines the data access methods required by UserSessionService.
-type SessionRepository interface {
-	Create(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
-	UpdateLastRequest(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
-	Delete(ctx context.Context, tx *sqlx.Tx, record *usersession.UserSession) error
-	GetByID(ctx context.Context, db *sqlx.DB, id int32, record *usersession.UserSession) error
-	GetByToken(ctx context.Context, db *sqlx.DB, token string, record *usersession.UserSession) error
-	GetByUserID(ctx context.Context, db *sqlx.DB, userID int32, record *usersession.UserSession) error
-	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*usersession.UserSession, error)
-	SetLastRequestNow(ctx context.Context, db *sqlx.DB, record *usersession.UserSession) error
-}
+// sessionTimeout is a sliding inactivity timeout — refreshed on every authenticated request (see
+// SetLastRequestNow) — while sessionMaxAge is a hard cap on total session lifetime regardless of
+// activity, so an actively-used (or leaked-and-actively-used) token can't stay valid forever.
+const (
+	sessionTimeout = 24 * time.Hour
+	sessionMaxAge  = 7 * 24 * time.Hour
+)
 
 // UserSessionService handles business logic for user session management.
 type UserSessionService struct {
@@ -139,7 +131,7 @@ func (s *UserSessionService) DeleteByID(ctx context.Context, record *usersession
 }
 
 // GetByID retrieves a user session record by its ID.
-func (s *UserSessionService) GetByID(ctx context.Context, record *usersession.UserSession, id int32) error {
+func (s *UserSessionService) GetByID(ctx context.Context, record *usersession.UserSession, id string) error {
 	err := s.sessionRepo.GetByID(ctx, s.DB, id, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
@@ -159,7 +151,7 @@ func (s *UserSessionService) GetByToken(ctx context.Context, record *usersession
 }
 
 // GetByUserID retrieves a user session by the associated user ID.
-func (s *UserSessionService) GetByUserID(ctx context.Context, record *usersession.UserSession, userID int32) error {
+func (s *UserSessionService) GetByUserID(ctx context.Context, record *usersession.UserSession, userID string) error {
 	err := s.sessionRepo.GetByUserID(ctx, s.DB, userID, record)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
@@ -173,6 +165,8 @@ func (s *UserSessionService) GetAll(ctx context.Context, r *req.Request) ([]*use
 	records, err := s.sessionRepo.GetCollection(ctx, s.DB, r)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return nil, err
 	}
 
 	return records, nil
@@ -190,7 +184,9 @@ func generateToken(nbytes int) (string, error) {
 
 // HasExpired returns true if the session's last request exceeds the session timeout duration.
 func (s *UserSessionService) HasExpired(us *usersession.UserSession) bool {
-	return us.LastRequest.Add(sessionTimeout).Before(time.Now())
+	now := time.Now()
+
+	return us.LastRequest.Add(sessionTimeout).Before(now) || us.CreatedAt.Add(sessionMaxAge).Before(now)
 }
 
 // SetLastRequestNow updates the session's last_request timestamp to the current time.

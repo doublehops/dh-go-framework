@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
@@ -28,20 +29,15 @@ func New(logger *logga.Logga) *Author {
 
 // Create inserts a new author record within the provided transaction.
 func (a *Author) Create(ctx context.Context, tx *sqlx.Tx, record *author.Author) error {
-	result, err := tx.NamedExec(insertRecordSQL, record)
+	record.ID = uuid.New().String()
+
+	_, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
 		errMsg := fmt.Sprintf("there was an error saving record to db. %s", err)
 		a.Log.Error(ctx, errMsg, nil)
 
 		return errors.New(errMsg)
 	}
-
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	record.ID = int32(lastInsertID) //nolint:gosec
 
 	return nil
 }
@@ -73,12 +69,12 @@ func (a *Author) Delete(ctx context.Context, tx *sqlx.Tx, model *author.Author) 
 }
 
 // GetByID retrieves an author record by its primary key.
-func (a *Author) GetByID(ctx context.Context, db *sqlx.DB, id int32, record *author.Author) error {
+func (a *Author) GetByID(ctx context.Context, db *sqlx.DB, id string, record *author.Author) error {
 	err := db.Get(record, selectByIDQuery, id)
 	if err != nil {
 		a.Log.Error(ctx, "unable to fetch record", logga.KVPs{"ID": id})
 
-		return fmt.Errorf("unable to fetch record %d", id)
+		return fmt.Errorf("unable to fetch record %s: %w", id, err)
 	}
 
 	return nil

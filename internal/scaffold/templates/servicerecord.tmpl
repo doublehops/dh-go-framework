@@ -1,0 +1,115 @@
+package {{.LowerCase}}service
+
+import (
+	"context"
+	"errors"
+
+	"{{.Module}}/internal/logga"
+	"{{.Module}}/internal/model/{{.LowerCase}}"
+	req "{{.Module}}/internal/request"
+	"{{.Module}}/internal/service"
+	"{{.Module}}/internal/service/userservice"
+)
+
+// {{.PascalCase}}Record wraps a {{.PascalCase}} model with service access, so callers act on the
+// record itself (record.Update(ctx, payload)) rather than passing the model back into the service.
+type {{.PascalCase}}Record struct {
+	Record *{{.LowerCase}}.{{.PascalCase}}
+	svc    *{{.ServiceName}}
+}
+
+// CanBeAccessedBy reports whether the requesting user may read or change this record. The default
+// allows its creator or an admin; adjust to suit the resource.
+func (r *{{.PascalCase}}Record) CanBeAccessedBy(u *userservice.UserRecord) bool {
+	if u == nil {
+		return false
+	}
+
+	return u.HasAdminRights() || r.Record.CreatedBy == u.Record.ID
+}
+
+// Create persists a new record and reloads it from the database.
+func (r *{{.PascalCase}}Record) Create(ctx context.Context) (*{{.PascalCase}}Record, error) {
+	if err := r.Record.SetCreated(ctx); err != nil {
+		r.svc.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
+
+		return nil, err
+	}
+
+	tx := r.svc.DB.MustBegin()
+	defer tx.Rollback() //nolint:errcheck
+
+	if err := r.svc.{{.CamelCase}}Repo.Create(ctx, tx, r.Record); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToSaveRecord+" "+err.Error(), nil)
+
+		return nil, req.ErrCouldNotSaveRecord
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
+
+		return nil, req.ErrCouldNotSaveRecord
+	}
+
+	if err := r.svc.{{.CamelCase}}Repo.GetByID(ctx, r.svc.DB, r.Record.ID, r.Record); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return nil, errors.New(service.UnableToRetrieveRecord)
+	}
+
+	return r, nil
+}
+
+// Update copies the editable fields from payload onto the record and saves it. Copy across only
+// the fields a client may change — the ID and audit fields in the payload must be ignored.
+func (r *{{.PascalCase}}Record) Update(ctx context.Context, payload *{{.LowerCase}}.{{.PascalCase}}) error {
+	// TODO: copy editable fields, e.g. r.Record.Name = payload.Name
+	_ = payload
+
+	r.Record.SetUpdated(ctx)
+
+	tx := r.svc.DB.MustBegin()
+	defer tx.Rollback() //nolint:errcheck
+
+	if err := r.svc.{{.CamelCase}}Repo.Update(ctx, tx, r.Record); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToUpdateRecord+" "+err.Error(), nil)
+
+		return req.ErrCouldNotSaveRecord
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
+
+		return req.ErrCouldNotSaveRecord
+	}
+
+	if err := r.svc.{{.CamelCase}}Repo.GetByID(ctx, r.svc.DB, r.Record.ID, r.Record); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return errors.New(service.UnableToRetrieveRecord)
+	}
+
+	return nil
+}
+
+// Delete soft-deletes the record.
+func (r *{{.PascalCase}}Record) Delete(ctx context.Context) error {
+	r.Record.SetDeleted(ctx)
+
+	tx := r.svc.DB.MustBegin()
+	defer tx.Rollback() //nolint:errcheck
+
+	if err := r.svc.{{.CamelCase}}Repo.Delete(ctx, tx, r.Record); err != nil {
+		r.svc.Log.Error(ctx, "unable to delete record. "+err.Error(), nil)
+
+		return req.ErrCouldNotSaveRecord
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.svc.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
+
+		return req.ErrCouldNotSaveRecord
+	}
+
+	return nil
+}
