@@ -23,8 +23,9 @@ const startupTimeout = 30 * time.Second
 
 // StartTestServer builds the server binary (using the Go build cache) and starts it as a
 // subprocess pointed at config_test.json, which configures port "0" — the OS assigns any free
-// port, so test packages running in parallel (go test ./...'s default) never collide on a fixed
-// one the way they used to. It blocks until the subprocess reports its assigned port and the
+// port, so a test server never collides with a fixed port already in use (e.g. a dev server).
+// Packages still can't run in parallel: RunMigrations drops the shared test database, so run
+// them with go test -p 1. It blocks until the subprocess reports its assigned port and the
 // health endpoint responds, then mutates cfg.Host.Port/TestURL in place to that port so the
 // caller's existing httprequest.GetRequester(cfg.Host.TestURL) calls reach the right place. The
 // returned function stops the server and must be called before os.Exit in TestMain (defers do

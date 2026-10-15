@@ -80,7 +80,7 @@ func run() error {
 	}
 
 	// A configured port of "0" asks the OS for any free port — used by the test harness
-	// (internal/testtools/server.go) so parallel test packages never collide on a fixed port.
+	// (internal/testtools/server.go) so a test server never collides with a fixed port in use.
 	// net.Listen (rather than srv.ListenAndServe, which listens internally) is required so the
 	// actual assigned port can be recovered and reported below.
 	listener, err := net.Listen("tcp", ":"+cfg.Host.Port)

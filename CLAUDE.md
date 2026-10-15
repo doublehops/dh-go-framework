@@ -23,7 +23,7 @@ make scaffold table=<table_name>
 
 **Run tests:**
 ```bash
-go test ./...
+go test -p 1 ./...   # -p 1 required: handler packages share and reset the test DB
 go test ./internal/some/package/... -v -run TestFunctionName
 ```
 
@@ -79,4 +79,4 @@ See `author` (handler, service, record, repository, model, tests) for the refere
 
 **Scaffolding** (`internal/scaffold/`, `cmd/scaffold/`) — reads a live DB table schema and generates the four layers above (service, record and repository interface included). The table must use `CHAR(36)` UUID ids and the standard audit columns. After generating, fill in the record's `Update` (it copies no fields until you do) and refine the generated validation rules. Output paths are configured in `cmd/scaffold/config.json`.
 
-**Testing:** handler tests start the server as a subprocess on port `0` (OS-assigned, so packages can run in parallel) via `testtools.StartTestServer(cfg)`, run migrations, and create users with `testtools.CreateTestUser` / `CreateTestUserWithRole`. They need the test database from `config_test.json`.
+**Testing:** handler tests start the server as a subprocess on port `0` (OS-assigned, so it never clashes with a server already running) via `testtools.StartTestServer(cfg)`, run migrations (`RunMigrations` drops every table in the shared test DB, so packages must run one at a time: `go test -p 1`), and create users with `testtools.CreateTestUser` / `CreateTestUserWithRole`. They need the test database from `config_test.json`.

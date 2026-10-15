@@ -66,8 +66,10 @@ jobs:
 
       # No separate API step: integration tests start their own server on an OS-assigned port
       # (config_test.json sets port "0") via testtools.StartTestServer.
+      # -p 1: each handler package's TestMain drops and re-migrates the shared test database
+      # (testtools.RunMigrations), so packages running in parallel delete each other's tables.
       - name: Run tests
-        run: go test ./... -v
+        run: go test -p 1 ./... -v
         env:
           DB_HOST: db
           DB_USER: dev
