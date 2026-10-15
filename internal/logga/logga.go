@@ -2,9 +2,11 @@ package logga
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
@@ -14,6 +16,7 @@ import (
 const (
 	logFormatJSON   = "json"
 	logWriterStdout = "stdout"
+	logWriterFile   = "file"
 	logWriterTest   = "testwriter"
 	logLevelDebug   = "DEBUG"
 	logLevelInfo    = "INFO"
@@ -21,9 +24,10 @@ const (
 	logLevelError   = "ERROR"
 )
 
-// ErrInvalidLogWriter and ErrInvalidLogLevelValue are errors returned when the logger config is invalid.
+// ErrInvalidLogWriter, ErrMissingLogFilePath and ErrInvalidLogLevelValue are errors returned when the logger config is invalid.
 var (
 	ErrInvalidLogWriter     = errors.New("a valid writer was not defined in configuration")
+	ErrMissingLogFilePath   = errors.New("log writer is file but no filePath was defined in configuration")
 	ErrInvalidLogLevelValue = errors.New("a valid log level was not defined in configuration")
 )
 
@@ -45,7 +49,7 @@ func New(cfg *config.Logging) (*Logga, error) {
 	logLevel := &slog.LevelVar{}
 	logLevel.Set(level)
 
-	writer, err := getWriterFromConfig(cfg.Writer)
+	writer, err := getWriterFromConfig(cfg.Writer, cfg.FilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -66,10 +70,19 @@ func New(cfg *config.Logging) (*Logga, error) {
 	return &Logga{Log: logger}, nil
 }
 
-func getWriterFromConfig(configuredWriter string) (io.Writer, error) {
+func getWriterFromConfig(configuredWriter, filePath string) (io.Writer, error) {
 	switch configuredWriter {
 	case logWriterStdout:
 		return os.Stdout, nil
+	case logWriterFile:
+		f, err := openLogFile(filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		// Still write to stdout so the console (and anything collecting container output) sees
+		// the same log lines as the file.
+		return io.MultiWriter(os.Stdout, f), nil
 	case "": // Default to stdout if none is defined.
 		return os.Stdout, nil
 	case logWriterTest: // Used for testing.
@@ -77,6 +90,25 @@ func getWriterFromConfig(configuredWriter string) (io.Writer, error) {
 	}
 
 	return nil, ErrInvalidLogWriter
+}
+
+// openLogFile opens filePath for appending, creating it and its directory if needed. The handle is
+// left open for the life of the process.
+func openLogFile(filePath string) (*os.File, error) {
+	if strings.TrimSpace(filePath) == "" {
+		return nil, ErrMissingLogFilePath
+	}
+
+	if err := os.MkdirAll(filepath.Dir(filePath), 0o750); err != nil {
+		return nil, fmt.Errorf("unable to create log directory. %w", err)
+	}
+
+	f, err := os.OpenFile(filepath.Clean(filePath), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open log file `%s`. %w", filePath, err)
+	}
+
+	return f, nil
 }
 
 // getLogLevelFromConfig maps a configured level name onto a slog.Level.

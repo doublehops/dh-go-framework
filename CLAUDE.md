@@ -38,6 +38,8 @@ The app loads config from a JSON file (default `config.json`, test uses `config_
 
 Optional host settings: `corsOrigin` (exact frontend origin; empty disables CORS) and `trustForwardedFor` (key the login rate limiter on the last `X-Forwarded-For` entry — only when every request arrives through one reverse proxy that appends to it, such as an AWS ALB). Unset `ENV:` values resolve to an empty string.
 
+Logging: `logging.writer` (`ENV:LOG_WRITER`) is `stdout` (default when empty) or `file`; `file` writes to `logging.filePath` (`ENV:LOG_FILE_PATH`) and to stdout via `io.MultiWriter`.
+
 The database for development is MariaDB 10.5 via Docker:
 ```bash
 docker compose up -d

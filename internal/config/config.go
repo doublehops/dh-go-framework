@@ -41,7 +41,10 @@ type Aggregator struct {
 
 // Logging holds log output configuration.
 type Logging struct {
-	Writer       string
+	// Writer is "stdout" (default when empty) or "file". "file" writes to FilePath and to stdout.
+	Writer string `json:"writer"`
+	// FilePath is the log file used when Writer is "file". Its directory is created if missing.
+	FilePath     string `json:"filePath"`
 	LogLevel     string `json:"logLevel"`
 	OutputFormat string `json:"outputFormat"`
 }

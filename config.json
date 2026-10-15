@@ -4,7 +4,8 @@
     "corsOrigin": "ENV:CORS_ORIGIN"
   },
   "logging": {
-    "writer": "stdout",
+    "writer": "ENV:LOG_WRITER",
+    "filePath": "ENV:LOG_FILE_PATH",
     "logLevel": "debug",
     "outputFormat": "text"
   },
