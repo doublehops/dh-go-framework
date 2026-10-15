@@ -40,10 +40,12 @@ jobs:
           done
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        # Pinned to v6.0.0: GitHub returns 404 for the archive of the commit the v6 tag currently
+        # points at (924ae3a), failing the job at "Download action repository".
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: '1.24'
 
@@ -61,28 +63,15 @@ jobs:
       - name: Check running containers
         run: docker ps
 
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24'
-
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Start Go API
-        run: |
-          nohup go run cmd/server/run.go -config config_test.json &
-          sleep 5  # Wait for the API to start
-
+      # No separate API step: integration tests start their own server on an OS-assigned port
+      # (config_test.json sets port "0") via testtools.StartTestServer.
+      # -p 1: each handler package's TestMain drops and re-migrates the shared test database
+      # (testtools.RunMigrations), so packages running in parallel delete each other's tables.
       - name: Run tests
-        run: |
-          # Example using curl to check the API health
-          curl --fail http://localhost:8088/v1/health || exit 1
-          # Alternatively, if you have specific test scripts, you can run them here
-          go test ./... -v
+        run: go test -p 1 ./... -v
         env:
           DB_HOST: db
           DB_USER: dev

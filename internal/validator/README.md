@@ -55,6 +55,31 @@ each could fail. It should be easy for any frontend to consume. An example would
 }
 ```
 
+## Normalising Before Validating
+
+Models can define a `Normalise()` method that tidies input (trim whitespace, lower-case, de-duplicate)
+before `Validate()` is called, so the rules check the value that will actually be stored. Handlers
+call it straight after decoding the request:
+
+```go
+record.Normalise()
+
+if errs := record.Validate(); len(errs) > 0 { ... }
+```
+
+## Checking a Referenced Record Exists
+
+`RecordExistsByID(model, errorMessage)` checks that a non-soft-deleted row with the given ID exists.
+The table name is the snake_case of the model's type name (`author.Author{}` → `author`,
+`widgetpart.WidgetPart{}` → `widget_part`).
+
+```go
+{"authorId", b.AuthorID, true, []validator.ValidationFuncs{validator.RecordExistsByID(author.Author{}, "")}},
+```
+
+It needs a database connection, set once at startup with `validator.Init(db)` (see
+`cmd/server/run.go`). Until then it fails with `ProcessingPropertyError`.
+
 ## Adding a Custom Validation Rule
 
 You can create custom validation functions and use them just the same. The function

@@ -2,3 +2,4 @@
 main
 .env
 tmp
+logs

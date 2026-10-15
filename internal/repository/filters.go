@@ -50,13 +50,8 @@ func addSorting(q, sort, order string) string {
 	}
 
 	s := camelToSnake(sort)
-	if order != "" {
-		o = Order(order)
-		if o != ASC && o != DESC {
-			sq = fmt.Sprintf(" ORDER BY %s %s", s, o)
-
-			return q + sq
-		}
+	if Order(order) == DESC {
+		o = DESC
 	}
 
 	sq = fmt.Sprintf(" ORDER BY %s %s", s, o)
@@ -95,6 +90,10 @@ func addFilters(query string, filters []req.FilterRule) (string, req.Params) {
 			clause := field + " IS NULL"
 			whereClauses = append(whereClauses, clause)
 		}
+	}
+
+	if len(whereClauses) == 0 {
+		return query, params
 	}
 
 	str := " WHERE " + strings.Join(whereClauses, " AND ")

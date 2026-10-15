@@ -2,11 +2,13 @@
 package routes
 
 import (
+	"github.com/doublehops/dh-go-framework/internal/config"
 	"github.com/doublehops/dh-go-framework/internal/handlers/auth"
 	"github.com/doublehops/dh-go-framework/internal/handlers/author"
 	"github.com/doublehops/dh-go-framework/internal/handlers/health"
 	"github.com/doublehops/dh-go-framework/internal/handlers/user"
 	"github.com/doublehops/dh-go-framework/internal/middleware"
+	"github.com/doublehops/dh-go-framework/internal/model/userrole"
 	"github.com/doublehops/dh-go-framework/internal/service"
 	"github.com/julienschmidt/httprouter"
 	group "github.com/mythrnr/httprouter-group"
@@ -14,7 +16,7 @@ import (
 )
 
 // GetV1Routes registers and returns all /v1 API routes for the application.
-func GetV1Routes(app *service.App) *group.RouteGroup {
+func GetV1Routes(app *service.App, cfg *config.Config) *group.RouteGroup {
 	authMW := func(next httprouter.Handle) httprouter.Handle {
 		return middleware.AuthMiddleware(app, next)
 	}
@@ -34,7 +36,8 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 
 	userHandle := user.New(app)
 
-	userGroup := group.New("/user").Middleware(authMW)
+	// RequireRoles must always sit inside authMW: it reads the UserRecord authMW put in context.
+	userGroup := group.New("/user").Middleware(authMW, middleware.RequireRoles(userrole.OrganisationAdminID, userrole.MasterAdminID))
 	userGroup.GET(userHandle.GetAll)
 	userGroup.Children(
 		group.New("/:id").GET(userHandle.GetByID),
@@ -43,11 +46,15 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 		group.New("/:id").DELETE(userHandle.DeleteByID),
 	)
 
+	// Any authenticated user can fetch their own record; it's how a client learns its own role.
+	meGroup := group.New("/me").Middleware(authMW).GET(userHandle.GetCurrentUser)
+
 	authHandle := auth.New(app)
+	loginRateLimiter := middleware.NewLoginRateLimiter(cfg.Host.TrustForwardedFor)
 
 	authGroup := group.New("/auth")
 	authGroup.Children(
-		group.New("/login").POST(authHandle.Login),
+		group.New("/login").POST(authHandle.Login).Middleware(loginRateLimiter.Middleware),
 		group.New("/logout").POST(authMW(authHandle.Logout)),
 	)
 
@@ -68,6 +75,7 @@ func GetV1Routes(app *service.App) *group.RouteGroup {
 		healthGroup,
 		authorGroup,
 		userGroup,
+		meGroup,
 		authGroup,
 		// myNewTableGroup,
 		// Add new groups here.

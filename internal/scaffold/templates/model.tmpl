@@ -1,11 +1,12 @@
 package {{.LowerCase}}
 
 import (
-    "time"
-
+{{- if .HasTime}}
+	"time"
+{{end}}
 	"{{.Module}}/internal/model"
-	"{{.Module}}/internal/validator"
 	req "{{.Module}}/internal/request"
+	"{{.Module}}/internal/validator"
 )
 
 type {{.PascalCase}} struct {
@@ -13,11 +14,19 @@ type {{.PascalCase}} struct {
 	{{.ModelStructProperties}}
 }
 
+// Response{{.PascalCase}} is the shape returned by the API. Remove any fields that shouldn't be exposed.
 type Response{{.PascalCase}} struct {
 	model.BaseModel
 	{{.ModelStructProperties}}
 }
 
+// Normalise tidies user input (e.g. trimming whitespace) before Validate is called, so the
+// validation rules apply to the value that will be stored.
+func ({{.FirstInitial}} *{{.PascalCase}}) Normalise() {
+}
+
+// getRules returns starting validation rules generated from the column types; refine as needed.
+// Use validator.RecordExistsByID(othermodel.Other{}, "") for columns referencing another table.
 func ({{.FirstInitial}} *{{.PascalCase}}) getRules() []validator.Rule {
 	return []validator.Rule{
 		{{.ValidationRules}}

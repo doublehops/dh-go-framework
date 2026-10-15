@@ -8,15 +8,29 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/doublehops/dh-go-framework/internal/config"
 )
 
-// StartTestServer builds the server binary (using the Go build cache) and starts it
-// as a subprocess pointed at config_test.json. It blocks until the health endpoint
-// responds or the timeout elapses. The returned function stops the server and must
-// be called before os.Exit in TestMain (defers do not run on os.Exit).
-func StartTestServer() (func(), error) {
+// startupTimeout bounds both how long the subprocess has to report its listening port and how
+// long its health endpoint then has to start responding. db.New retries up to 5×5s before giving
+// up, so this must comfortably exceed that.
+const startupTimeout = 30 * time.Second
+
+// StartTestServer builds the server binary (using the Go build cache) and starts it as a
+// subprocess pointed at config_test.json, which configures port "0" — the OS assigns any free
+// port, so a test server never collides with a fixed port already in use (e.g. a dev server).
+// Packages still can't run in parallel: RunMigrations drops the shared test database, so run
+// them with go test -p 1. It blocks until the subprocess reports its assigned port and the
+// health endpoint responds, then mutates cfg.Host.Port/TestURL in place to that port so the
+// caller's existing httprequest.GetRequester(cfg.Host.TestURL) calls reach the right place. The
+// returned function stops the server and must be called before os.Exit in TestMain (defers do
+// not run on os.Exit).
+func StartTestServer(cfg *config.Config) (func(), error) {
 	projectRoot, err := findProjectRoot()
 	if err != nil {
 		return nil, fmt.Errorf("StartTestServer: %w", err)
@@ -39,7 +53,8 @@ func StartTestServer() (func(), error) {
 	serverCmd := exec.Command(binPath, "-config", configPath) //nolint:gosec
 	serverCmd.Dir = projectRoot
 
-	// Capture output so startup errors are visible in test failure messages.
+	// Capture output so startup errors are visible in test failure messages, and so
+	// waitForPort below can scan it for the subprocess's SERVER_LISTENING_PORT= marker line.
 	var (
 		mu  sync.Mutex
 		buf bytes.Buffer
@@ -67,13 +82,58 @@ func StartTestServer() (func(), error) {
 		_ = serverCmd.Process.Kill()
 	}
 
-	// Allow up to 30s: db.New retries up to 5×5s before giving up.
-	if err := waitForServer("http://localhost:8088/v1/health", 30*time.Second, errCh); err != nil {
+	deadline := time.Now().Add(startupTimeout)
+
+	port, err := waitForPort(&mu, &buf, deadline, errCh)
+	if err != nil {
 		stop()
+
+		return nil, err
+	}
+
+	cfg.Host.Port = strconv.Itoa(port)
+	cfg.Host.TestURL = fmt.Sprintf("http://localhost:%d", port)
+
+	if err := waitForServer(cfg.Host.TestURL+"/v1/health", time.Until(deadline), errCh); err != nil {
+		stop()
+
 		return nil, err
 	}
 
 	return stop, nil
+}
+
+// waitForPort polls buf (the subprocess's captured stdout/stderr) for the SERVER_LISTENING_PORT=
+// marker line printed by cmd/server/run.go once it has bound its OS-assigned port.
+func waitForPort(mu *sync.Mutex, buf *bytes.Buffer, deadline time.Time, errCh chan error) (int, error) {
+	const marker = "SERVER_LISTENING_PORT="
+
+	for time.Now().Before(deadline) {
+		select {
+		case err := <-errCh:
+			return 0, fmt.Errorf("test server failed to start: %w", err)
+		default:
+		}
+
+		mu.Lock()
+		output := buf.String()
+		mu.Unlock()
+
+		if idx := strings.Index(output, marker); idx != -1 {
+			rest := output[idx+len(marker):]
+			if nl := strings.IndexByte(rest, '\n'); nl != -1 {
+				rest = rest[:nl]
+			}
+
+			if port, err := strconv.Atoi(strings.TrimSpace(rest)); err == nil {
+				return port, nil
+			}
+		}
+
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	return 0, fmt.Errorf("test server did not report a listening port within %s", startupTimeout)
 }
 
 // waitForServer polls the given URL until it returns a 200 response, the timeout elapses,

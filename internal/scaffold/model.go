@@ -15,6 +15,7 @@ func (s *Scaffold) createModel(ctx context.Context, m Model) error {
 	s.l.Info(ctx, ">>>>>>>> in createModel()", nil)
 	m.ModelStructProperties = getStructProperties(m.Columns)
 	m.ValidationRules = s.getValidationRules(m)
+	m.HasTime = hasTimeProperty(m.Columns)
 	path := fmt.Sprintf("%s/%s/%s", s.pwd, s.Paths.Model, m.LowerCase)
 	filename := fmt.Sprintf("%s/%s.go", path, m.LowerCase)
 
@@ -37,14 +38,34 @@ func (s *Scaffold) createModel(ctx context.Context, m Model) error {
 	return nil
 }
 
+// Column names given special treatment by the generator.
+const (
+	colID        = "id"
+	colCreatedBy = "created_by"
+	colCreatedAt = "created_at"
+	colDeletedAt = "deleted_at"
+)
+
+// baseModelColumns are provided by model.BaseModel, so they're not generated on the model itself.
+var baseModelColumns = []string{colID, colCreatedBy, "updated_by", colCreatedAt, "updated_at", colDeletedAt}
+
+// hasTimeProperty reports whether any generated model property is a *time.Time.
+func hasTimeProperty(columns []column) bool {
+	for _, col := range columns {
+		if col.Type == typeDatetime && !str.SliceContains(col.Original, baseModelColumns) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // getStructProperties will build the struct properties.
 func getStructProperties(columns []column) string {
-	ignoreColumns := []string{"id", "created_at", "updated_at", "deleted_at"}
-
 	var properties string
 
 	for _, col := range columns {
-		if str.SliceContains(col.Original, ignoreColumns) {
+		if str.SliceContains(col.Original, baseModelColumns) {
 			continue
 		}
 
@@ -58,10 +79,8 @@ func getStructProperties(columns []column) string {
 func (s *Scaffold) getValidationRules(m Model) string {
 	var rules string
 
-	ignoreColumns := []string{"id", "created_at", "updated_at", "deleted_at"}
-
 	for _, col := range m.Columns {
-		if str.SliceContains(col.Original, ignoreColumns) {
+		if str.SliceContains(col.Original, baseModelColumns) {
 			continue
 		}
 
@@ -71,22 +90,22 @@ func (s *Scaffold) getValidationRules(m Model) string {
 	return rules
 }
 
-// getRule will return a validation rule based on the column type.
+// getRule will return a starting validation rule based on the column type, to be refined by hand.
+// Columns ending in _id that reference another table are good candidates for
+// validator.RecordExistsByID. Types with no sensible default (datetime, bool) get no rule.
 func getRule(col column, m Model) string {
-	var rule string
-
 	noLint := "//nolint:govet"
 
 	switch col.Type {
-	case "string":
-		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
-	case "int":
-		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.IsInt(\"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
-	default:
-		rule = fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(3, 8, \"\")}}, %s,\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
+	case typeString:
+		return fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.LengthInRange(1, 255, \"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
+	case typeInt:
+		return fmt.Sprintf("{\"%s\", %s.%s, true, []validator.ValidationFuncs{validator.IsInt(\"\")}}, %s\n", col.CamelCase, m.FirstInitial, col.CapitalisedAbbr, noLint)
+	case typeBool, typeDatetime:
+		return ""
 	}
 
-	return rule
+	return ""
 }
 
 // getPropertyType will check which column type the property is and return a corresponding

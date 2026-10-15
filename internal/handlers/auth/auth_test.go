@@ -34,19 +34,27 @@ func TestMain(m *testing.M) {
 		log.Fatalf("error loading config: %s", err.Error())
 	}
 
-	stopServer, err := testtools.StartTestServer()
+	stopServer, err := testtools.StartTestServer(cfg)
 	if err != nil {
 		log.Fatalf("failed to start test server: %v", err)
 	}
 
+	// Once the server subprocess is up, any later fatal setup failure must stop it before
+	// exiting — log.Fatalf calls os.Exit directly, which skips deferred cleanup and would
+	// otherwise leak the subprocess.
+	fatalf := func(format string, args ...any) {
+		stopServer()
+		log.Fatalf(format, args...)
+	}
+
 	if err = testtools.RunMigrations(cfg); err != nil {
-		log.Fatalf("failed to run migrations: %v", err)
+		fatalf("failed to run migrations: %v", err)
 	}
 
 	testEmail = fmt.Sprintf("authtest-%d@example.com", time.Now().UnixNano())
 
 	if _, _, err = testtools.CreateTestUser(cfg, testEmail, testPassword); err != nil {
-		log.Fatalf("failed to create test user: %v", err)
+		fatalf("failed to create test user: %v", err)
 	}
 
 	code := m.Run()

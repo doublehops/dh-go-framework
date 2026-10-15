@@ -2,6 +2,8 @@
 package author
 
 import (
+	"strings"
+
 	"github.com/doublehops/dh-go-framework/internal/model"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/validator"
@@ -11,6 +13,12 @@ import (
 type Author struct {
 	model.BaseModel
 	Name string `json:"name" db:"name"`
+}
+
+// Normalise tidies user input before validation, so the length rules apply to the stored value
+// (an all-whitespace name correctly fails the minimum-length check). Call before Validate.
+func (a *Author) Normalise() {
+	a.Name = strings.TrimSpace(a.Name)
 }
 
 func (a *Author) getRules() []validator.Rule {

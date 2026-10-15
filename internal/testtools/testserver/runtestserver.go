@@ -45,7 +45,7 @@ func RunTestServer() error {
 	}
 
 	router := httprouter.New()
-	rts := routes.GetV1Routes(App)
+	rts := routes.GetV1Routes(App, cfg)
 
 	l.Info(ctx, "Adding routes", nil)
 	for _, r := range rts.Routes() {
@@ -55,10 +55,10 @@ func RunTestServer() error {
 
 	mux := http.TimeoutHandler(router, time.Second*1, "Timeout!")
 
-	l.Info(ctx, "Starting server on port :8088", nil)
+	l.Info(ctx, "Starting server on port :"+cfg.Host.Port, nil)
 
 	// todo - This really needs to be replaced with something that allows timeouts.
-	err = http.ListenAndServe(":8088", mux) // nolint:gosec // @todo - remove this exception.
+	err = http.ListenAndServe(":"+cfg.Host.Port, mux) // nolint:gosec // @todo - remove this exception.
 	if err != nil {
 		return fmt.Errorf("unable to start server. %s", err.Error())
 	}

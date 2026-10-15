@@ -5,7 +5,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
-	"github.com/doublehops/dh-go-framework/internal/model"
 )
 
 // UnableToSaveRecord and related constants are common error message strings used across services.
@@ -17,13 +16,11 @@ const (
 )
 
 // App holds shared application dependencies (DB and logger) injected into all services.
+//
+// Authorisation is not handled here. AuthMiddleware puts the requesting *userservice.UserRecord in
+// the request context; route-level role checks use middleware.RequireRoles, and record-level checks
+// are methods on the resource's record (e.g. AuthorRecord.CanBeAccessedBy).
 type App struct {
 	DB  *sqlx.DB
 	Log *logga.Logga
-}
-
-// HasPermission will check whether the authenticated user has authorisation for the requested record. This function
-// can be overwritten in each service.
-func (a *App) HasPermission(userID int32, record model.Model) bool {
-	return userID == record.GetUserID()
 }

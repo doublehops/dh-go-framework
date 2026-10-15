@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/jinzhu/copier"
 	"github.com/julienschmidt/httprouter"
@@ -36,6 +35,7 @@ func New(app *service.App) *Handle {
 }
 
 // Create handles POST /user requests to create a new user record.
+// Route-level role gating (org_admin/master_admin) is enforced by middleware.RequireRoles in routes.go.
 func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var emailAddressExists bool
 	var err error
@@ -49,8 +49,17 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	if errors := record.ValidateCreate(); len(errors) > 0 {
-		errs := req.GetValidateErrResp(errors, req.ErrValidation.Error())
+	// Organisation and role come from the requesting user, never the request body — otherwise an
+	// organisation admin could create users in another organisation, or grant master_admin.
+	reqUser := h.base.GetRequestingUserRecord(ctx)
+	record.OrganisationID = reqUser.Record.OrganisationID
+
+	if !reqUser.IsMasterAdmin() {
+		record.RoleID = ""
+	}
+
+	if ValidationErrors := record.ValidateCreate(); len(ValidationErrors) > 0 {
+		errs := req.GetValidateErrResp(ValidationErrors, req.ErrValidation.Error())
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, errs)
 
 		return
@@ -68,14 +77,33 @@ func (h *Handle) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		return
 	}
 
-	a, err := h.srv.Create(ctx, record)
+	ur, err := h.srv.NewRecord(record).Create(ctx)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp(req.ErrProcessingRequest.Error()))
 
 		return
 	}
 
-	response, err := h.GetResponse(ctx, a)
+	response, err := h.GetResponse(ctx, ur.Record)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
+
+		return
+	}
+
+	h.base.WriteJSON(ctx, w, http.StatusOK, req.GetSingleItemResp(response))
+}
+
+// GetCurrentUser handles GET /me. Unlike GetByID, this carries no role restriction at the route
+// level (see routes.go) — any authenticated user can fetch their own record, since it's the only
+// way the frontend has to learn its own role (GET /user/:id is org_admin/master_admin only).
+func (h *Handle) GetCurrentUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ctx := r.Context()
+	h.base.Log.Info(ctx, "Request made to GetCurrentUser", nil)
+
+	reqUser := h.base.GetRequestingUserRecord(ctx)
+
+	response, err := h.GetResponse(ctx, reqUser.Record)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
@@ -117,61 +145,55 @@ func (h *Handle) GetCollectionResponse(ctx context.Context, records []*model.Use
 }
 
 // UpdateByID handles PATCH /user/:id requests to update an existing user record.
+// Route-level role gating (org_admin/master_admin) is enforced by middleware.RequireRoles in routes.go.
 func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
-	// userID := h.base.GetUser(ctx)
 	h.base.Log.Info(ctx, "Request made to UpdateUser", nil)
 
-	ID := ps.ByName("id")
-	i, err := strconv.ParseInt(ID, 10, 32)
-	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, "ID is not a valid value")
-
-		return
-	}
-
-	record := &model.User{}
-	err = h.srv.GetByID(ctx, record, int32(i))
-	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, err)
-
-		return
-	}
-
-	if record.ID == 0 {
-		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
-
-		return
-	}
-
-	// Uncomment to check authorization.
-	// if !h.srv.HasPermission(userID, record) {
-	//	 h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
-	//
-	//	 return
-	// }
-
-	if err := json.NewDecoder(r.Body).Decode(record); err != nil {
+	payload := &model.User{}
+	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, req.UnableToParseResp())
 
 		return
 	}
 
-	if errors := record.ValidateUpdate(); len(errors) > 0 {
-		errs := req.GetValidateErrResp(errors, req.ErrValidation.Error())
+	reqUser := h.base.GetRequestingUserRecord(ctx)
+
+	id := ps.ByName("id")
+
+	rh, err := h.srv.GetByID(ctx, id)
+	if err != nil {
+		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
+
+		return
+	}
+
+	if rh.Record.ID == "" {
+		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
+
+		return
+	}
+
+	if !reqUser.HasPermissionToAccessUser(rh.Record) {
+		h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
+
+		return
+	}
+
+	if errorMsgs := payload.ValidateUpdate(); len(errorMsgs) > 0 {
+		errs := req.GetValidateErrResp(errorMsgs, req.ErrValidation.Error())
 		h.base.WriteJSON(ctx, w, http.StatusBadRequest, errs)
 
 		return
 	}
 
-	record, err = h.srv.Update(ctx, record)
-	if err != nil {
+	if err := rh.Update(ctx, payload); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, "Unable to process request")
 
 		return
 	}
 
-	response, err := h.GetResponse(ctx, record)
+	response, err := h.GetResponse(ctx, rh.Record)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
@@ -182,41 +204,35 @@ func (h *Handle) UpdateByID(w http.ResponseWriter, r *http.Request, ps httproute
 }
 
 // DeleteByID handles DELETE /user/:id requests to soft-delete a user record.
+// Route-level role gating (org_admin/master_admin) is enforced by middleware.RequireRoles in routes.go.
 func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
-	// userID := h.base.GetUser(ctx)
 	h.base.Log.Info(ctx, "Request made to DELETE user", nil)
 
-	ID := ps.ByName("id")
-	i, err := strconv.ParseInt(ID, 10, 32)
-	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, "ID is not a valid value")
+	reqUser := h.base.GetRequestingUserRecord(ctx)
 
-		return
-	}
+	id := ps.ByName("id")
 
-	record := &model.User{}
-	err = h.srv.GetByID(ctx, record, int32(i))
+	rh, err := h.srv.GetByID(ctx, id)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
 
 		return
 	}
 
-	if record.ID == 0 {
+	if rh.Record.ID == "" {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
 
 		return
 	}
 
-	// Uncomment to check authorization.
-	// if !h.srv.HasPermission(userID, record) {
-	//	 h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
-	//
-	//	 return
-	// }
+	if !reqUser.HasPermissionToAccessUser(rh.Record) {
+		h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
 
-	if err = h.srv.DeleteByID(ctx, record); err != nil {
+		return
+	}
+
+	if err := rh.Delete(ctx); err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ErrorProcessingRequestResp())
 
 		return
@@ -226,41 +242,35 @@ func (h *Handle) DeleteByID(w http.ResponseWriter, r *http.Request, ps httproute
 }
 
 // GetByID handles GET /user/:id requests to retrieve a single user record.
+// Route-level role gating (org_admin/master_admin) is enforced by middleware.RequireRoles in routes.go.
 func (h *Handle) GetByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx := r.Context()
-	// userID := h.base.GetUser(ctx)
 	h.base.Log.Info(ctx, "Request made to Get user", nil)
 
-	ID := ps.ByName("id")
-	i, err := strconv.ParseInt(ID, 10, 32)
-	if err != nil {
-		h.base.WriteJSON(ctx, w, http.StatusBadRequest, "ID is not a valid value")
+	reqUser := h.base.GetRequestingUserRecord(ctx)
 
-		return
-	}
+	id := ps.ByName("id")
 
-	record := &model.User{}
-	err = h.srv.GetByID(ctx, record, int32(i))
+	rh, err := h.srv.GetByID(ctx, id)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, "Unable to find record")
 
 		return
 	}
 
-	if record.ID == 0 {
+	if rh.Record.ID == "" {
 		h.base.WriteJSON(ctx, w, http.StatusNotFound, req.GetNotFoundResp())
 
 		return
 	}
 
-	// Uncomment to check authorization.
-	// if !h.srv.HasPermission(userID, record) {
-	//	 h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
-	//
-	//	 return
-	// }
+	if !reqUser.HasPermissionToAccessUser(rh.Record) {
+		h.base.WriteJSON(ctx, w, http.StatusForbidden, req.GetNotAuthorisedResp())
 
-	response, err := h.GetResponse(ctx, record)
+		return
+	}
+
+	response, err := h.GetResponse(ctx, rh.Record)
 	if err != nil {
 		h.base.WriteJSON(ctx, w, http.StatusInternalServerError, req.ServerErrResp("error building response object"))
 
@@ -295,11 +305,18 @@ func getSortableFields() []string {
 }
 
 // GetAll will retrieve all records for output.
+// Route-level role gating (org_admin/master_admin) is enforced by middleware.RequireRoles in routes.go.
 func (h *Handle) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ctx := r.Context()
-	h.base.Log.Info(ctx, "Request made to Get user", nil)
+	h.base.Log.Info(ctx, "Request made to Get user collection", nil)
+
+	reqUser := h.base.GetRequestingUserRecord(ctx)
 
 	p := req.GetRequestParams(r, filterRules(), getSortableFields())
+
+	if !reqUser.IsMasterAdmin() {
+		p.Filters = append(p.Filters, req.FilterRule{Field: "organisation_id", Type: req.FilterEquals, Value: reqUser.Record.OrganisationID})
+	}
 
 	records, err := h.srv.GetAll(ctx, p)
 	if err != nil {

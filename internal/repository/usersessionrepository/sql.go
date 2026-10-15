@@ -2,6 +2,7 @@
 package usersessionrepository
 
 var insertRecordSQL = `INSERT INTO user_session (
+	id,
 	user_id,
 	token,
 	last_request,
@@ -9,6 +10,7 @@ var insertRecordSQL = `INSERT INTO user_session (
 	updated_at,
 	deleted_at
 	) VALUES (
+	:id,
 	:user_id,
 	:token,
 	:last_request,

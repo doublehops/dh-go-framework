@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql" // Importing the MySQL driver for database/sql.
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/config"
@@ -24,7 +24,15 @@ func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	var err error
 
-	connectStr := fmt.Sprintf("%s:%s@(%s:3306)/%s?parseTime=true", cfg.User, cfg.Pass, cfg.Host, cfg.Name)
+	// FormatDSN escapes the credentials, so a password containing '@', '/' or ':' still connects.
+	mysqlCfg := mysql.NewConfig()
+	mysqlCfg.User = cfg.User
+	mysqlCfg.Passwd = cfg.Pass
+	mysqlCfg.Net = "tcp"
+	mysqlCfg.Addr = fmt.Sprintf("%s:%s", cfg.Host, cfg.PortOrDefault())
+	mysqlCfg.DBName = cfg.Name
+	mysqlCfg.ParseTime = true
+	connectStr := mysqlCfg.FormatDSN()
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		db, err = sqlx.Connect("mysql", connectStr)
@@ -33,7 +41,9 @@ func New(l *logga.Logga, cfg config.DB) (*sqlx.DB, error) {
 		}
 
 		l.Log.Error(fmt.Sprintf("unable to open db connection. %s", err))
-		l.Log.Error(fmt.Sprintf("Database connection error. user: %s; password: %s; host: %s; name: %s", cfg.User, cfg.Pass, cfg.Host, cfg.Name))
+		// cfg.Pass is deliberately not logged: logs are commonly shipped to external storage, and a
+		// wrong host or database name is what actually needs diagnosing here.
+		l.Log.Error(fmt.Sprintf("Database connection error. user: %s; host: %s; name: %s", cfg.User, cfg.Host, cfg.Name))
 
 		time.Sleep(delay * time.Second)
 	}

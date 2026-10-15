@@ -24,10 +24,16 @@ func GetRequestParams(r *http.Request, filters []FilterRule, sortableFields []st
 	f := getFilterParams(r.Context(), query, filters)
 
 	sort := query.Get("sortBy")
-	order := query.Get("order")
+	order := strings.ToUpper(query.Get("order"))
 
-	// Do not include sort field if it's not in allowed list.
+	// Both values are interpolated into ORDER BY (they can't be bound as parameters), so anything
+	// not explicitly allowed is dropped rather than passed through.
 	if !str.SliceContains(sort, sortableFields) {
+		sort = ""
+		order = ""
+	}
+
+	if order != "ASC" && order != "DESC" {
 		order = ""
 	}
 
@@ -37,7 +43,7 @@ func GetRequestParams(r *http.Request, filters []FilterRule, sortableFields []st
 		Offset:  offset,
 		Filters: f,
 		Sort:    sort,
-		Order:   strings.ToUpper(order),
+		Order:   order,
 	}
 
 	return pg

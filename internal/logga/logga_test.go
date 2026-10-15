@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -57,6 +60,82 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestGetWriterFromConfig(t *testing.T) {
+	tests := []struct {
+		name          string
+		writer        string
+		filePath      string
+		expectedError error
+	}{
+		{name: "successStdout", writer: "stdout"},
+		{name: "successEmptyDefaultsToStdout", writer: ""},
+		{name: "successFile", writer: "file", filePath: "app.log"},
+		{name: "successFileCreatesDirectory", writer: "file", filePath: "nested/dir/app.log"},
+		{name: "failFileWithoutPath", writer: "file", filePath: "", expectedError: ErrMissingLogFilePath},
+		{name: "failUnknownWriter", writer: "syslog", expectedError: ErrInvalidLogWriter},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := tt.filePath
+			if filePath != "" {
+				filePath = filepath.Join(t.TempDir(), filePath)
+			}
+
+			_, err := getWriterFromConfig(tt.writer, filePath)
+			if !errors.Is(err, tt.expectedError) {
+				t.Errorf("error not as expected. Wanted: %s; got: %s", tt.expectedError, err)
+			}
+
+			if err == nil && filePath != "" {
+				if _, err := os.Stat(filePath); err != nil {
+					t.Errorf("expected log file to be created. %s", err)
+				}
+			}
+		})
+	}
+}
+
+// The file writer must still write to stdout as well as to the file.
+func TestFileWriterAlsoWritesToStdout(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "app.log")
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("unable to create pipe. %s", err)
+	}
+
+	origStdout := os.Stdout
+	os.Stdout = w
+
+	l, err := New(&config.Logging{Writer: "file", FilePath: filePath, OutputFormat: "json", LogLevel: "DEBUG"})
+
+	os.Stdout = origStdout
+
+	if err != nil {
+		t.Fatalf("Got unexpected error. %s", err)
+	}
+
+	l.Info(context.Background(), basicMessage, nil)
+	_ = w.Close()
+
+	stdout, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("unable to read stdout. %s", err)
+	}
+
+	fileData, err := os.ReadFile(filePath) //nolint:gosec
+	if err != nil {
+		t.Fatalf("unable to read log file. %s", err)
+	}
+
+	for name, out := range map[string]string{"stdout": string(stdout), "file": string(fileData)} {
+		if !strings.Contains(out, basicMessage) {
+			t.Errorf("expected %s to contain the log message; got: %q", name, out)
+		}
+	}
+}
+
 func TestGetLogLevel(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -75,6 +154,26 @@ func TestGetLogLevel(t *testing.T) {
 			configuredLevel: "INFO",
 			expectedLevel:   slog.LevelInfo,
 			expectedError:   nil,
+		},
+		{
+			// Parsing is case-insensitive: the value comes from an env var and an unrecognised
+			// one is a fatal startup error, so casing must not decide whether the app boots.
+			name:            "successLowercase",
+			configuredLevel: "info",
+			expectedLevel:   slog.LevelInfo,
+			expectedError:   nil,
+		},
+		{
+			name:            "successMixedCaseAndWhitespace",
+			configuredLevel: "  Debug ",
+			expectedLevel:   slog.LevelDebug,
+			expectedError:   nil,
+		},
+		{
+			name:            "failUnrecognisedValueStillRejected",
+			configuredLevel: "verbose",
+			expectedLevel:   slog.LevelInfo,
+			expectedError:   ErrInvalidLogLevelValue,
 		},
 		{
 			name:            "successWARN",
@@ -141,7 +240,7 @@ func TestSendLogMessage(t *testing.T) {
 			ctxArgs:    map[interface{}]interface{}{},
 			customArgs: KVPs{},
 			expectedOutput: logOutput{
-				Level: "INFO",
+				Level: "info",
 				Msg:   basicMessage,
 			},
 		},
@@ -158,7 +257,7 @@ func TestSendLogMessage(t *testing.T) {
 			},
 			customArgs: KVPs{},
 			expectedOutput: logOutput{
-				Level:   "INFO",
+				Level:   "info",
 				Msg:     basicMessage,
 				TraceID: "trace-99876",
 				UserID:  123,
@@ -176,7 +275,7 @@ func TestSendLogMessage(t *testing.T) {
 				"Age":  33,
 			},
 			expectedOutput: logOutput{
-				Level: "INFO",
+				Level: "info",
 				Msg:   basicMessage,
 				Name:  "JohnS",
 				Age:   33,

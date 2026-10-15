@@ -4,10 +4,11 @@ package app
 // ContextVar is a string type used as context keys to avoid collisions.
 type ContextVar string
 
-// UserIDKey and TraceIDKey are context keys for storing user ID and trace ID in request context.
+// UserIDKey, UserRecordKey and TraceIDKey are context keys for storing request-scoped values.
 const (
-	UserIDKey  ContextVar = "userID"
-	TraceIDKey ContextVar = "traceID"
+	UserIDKey     ContextVar = "userID"
+	UserRecordKey ContextVar = "userRecord"
+	TraceIDKey    ContextVar = "traceID"
 )
 
 func (c ContextVar) String() string {

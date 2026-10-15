@@ -4,25 +4,14 @@ package authorservice
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
-
-	"github.com/doublehops/dh-go-framework/internal/logga"
 	"github.com/doublehops/dh-go-framework/internal/model/author"
 	"github.com/doublehops/dh-go-framework/internal/repository/repositoryauthor"
 	req "github.com/doublehops/dh-go-framework/internal/request"
 	"github.com/doublehops/dh-go-framework/internal/service"
 )
 
-// AuthorRepository defines the data access methods required by AuthorService.
-type AuthorRepository interface {
-	Create(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
-	Update(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
-	Delete(ctx context.Context, tx *sqlx.Tx, record *author.Author) error
-	GetByID(ctx context.Context, db *sqlx.DB, id int32, record *author.Author) error
-	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*author.Author, error)
-}
-
-// AuthorService handles business logic for author management.
+// AuthorService handles business logic for author management. Collection-level operations live
+// here; operations on a single record live on AuthorRecord (see authorrecord.go).
 type AuthorService struct {
 	*service.App
 	authorRepo AuthorRepository
@@ -36,97 +25,30 @@ func New(app *service.App) *AuthorService {
 	}
 }
 
-// Create persists a new author record.
-func (s AuthorService) Create(ctx context.Context, record *author.Author) (*author.Author, error) {
-	if err := record.SetCreated(ctx); err != nil {
-		s.Log.Error(ctx, "error in SetCreated", logga.KVPs{"error": err.Error()})
-	}
-
-	tx := s.DB.MustBegin()
-	defer tx.Rollback() // nolint: errcheck
-
-	err := s.authorRepo.Create(ctx, tx, record)
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToSaveRecord+" "+err.Error(), nil)
-
-		return record, req.ErrCouldNotSaveRecord
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
-	}
-
-	a := &author.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
-	}
-
-	return a, nil
+// NewRecord wraps a bare author model in an AuthorRecord.
+func (s *AuthorService) NewRecord(a *author.Author) *AuthorRecord {
+	return &AuthorRecord{Record: a, svc: s}
 }
 
-// Update saves changes to an existing author record.
-func (s AuthorService) Update(ctx context.Context, record *author.Author) (*author.Author, error) {
-	record.SetUpdated(ctx)
-
-	tx := s.DB.MustBegin()
-	defer tx.Rollback() // nolint: errcheck
-
-	err := s.authorRepo.Update(ctx, tx, record)
-	if err != nil {
-		s.Log.Error(ctx, "unable to update record. "+err.Error(), nil)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
-	}
-
-	a := &author.Author{}
-	err = s.authorRepo.GetByID(ctx, s.DB, record.ID, a)
-	if err != nil {
+// GetByID retrieves an author record by its ID. An error is returned when it doesn't exist.
+func (s *AuthorService) GetByID(ctx context.Context, id string) (*AuthorRecord, error) {
+	record := &author.Author{}
+	if err := s.authorRepo.GetByID(ctx, s.DB, id, record); err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return nil, err
 	}
 
-	return a, nil
-}
-
-// DeleteByID soft-deletes an author record.
-func (s AuthorService) DeleteByID(ctx context.Context, record *author.Author) error {
-	tx := s.DB.MustBegin()
-	defer tx.Rollback() // nolint: errcheck
-
-	record.SetDeleted(ctx)
-
-	err := s.authorRepo.Delete(ctx, tx, record)
-	if err != nil {
-		s.Log.Error(ctx, "unable to delete record. "+err.Error(), nil)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToCommitTransaction+" "+err.Error(), nil)
-	}
-
-	return nil
-}
-
-// GetByID retrieves an author record by its ID.
-func (s AuthorService) GetByID(ctx context.Context, record *author.Author, id int32) error {
-	err := s.authorRepo.GetByID(ctx, s.DB, id, record)
-	if err != nil {
-		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
-	}
-
-	return nil
+	return s.NewRecord(record), nil
 }
 
 // GetAll retrieves a paginated collection of author records.
-func (s AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
+func (s *AuthorService) GetAll(ctx context.Context, p *req.Request) ([]*author.Author, error) {
 	records, err := s.authorRepo.GetCollection(ctx, s.DB, p)
 	if err != nil {
 		s.Log.Error(ctx, service.UnableToRetrieveRecord+" "+err.Error(), nil)
+
+		return nil, err
 	}
 
 	return records, nil

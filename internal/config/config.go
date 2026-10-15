@@ -25,6 +25,13 @@ type Config struct {
 type Host struct {
 	Port    string `json:"port"`
 	TestURL string `json:"testUrl"`
+	// CORSOrigin is the exact frontend origin allowed to call the API from a browser (e.g.
+	// "https://example.com"). Empty disables the CORS middleware.
+	CORSOrigin string `json:"corsOrigin"`
+	// TrustForwardedFor makes IP-based controls (the login rate limiter) use the last
+	// X-Forwarded-For entry. Only enable when every request arrives through one reverse proxy
+	// that appends to the header (e.g. an AWS ALB).
+	TrustForwardedFor bool `json:"trustForwardedFor"`
 }
 
 // Aggregator holds aggregator configuration.
@@ -34,7 +41,10 @@ type Aggregator struct {
 
 // Logging holds log output configuration.
 type Logging struct {
-	Writer       string
+	// Writer is "stdout" (default when empty) or "file". "file" writes to FilePath and to stdout.
+	Writer string `json:"writer"`
+	// FilePath is the log file used when Writer is "file". Its directory is created if missing.
+	FilePath     string `json:"filePath"`
 	LogLevel     string `json:"logLevel"`
 	OutputFormat string `json:"outputFormat"`
 }
@@ -44,7 +54,21 @@ type DB struct {
 	User string `json:"user"`
 	Pass string `json:"password"`
 	Host string `json:"host"`
+	Port string `json:"port"`
 	Name string `json:"name"`
+}
+
+// defaultDBPort is used when Port is left unset.
+const defaultDBPort = "3306"
+
+// PortOrDefault returns Port, falling back to defaultDBPort when unset. Every DSN built from this
+// config must go through this rather than hardcoding "3306", so a non-default port is honoured.
+func (d DB) PortOrDefault() string {
+	if d.Port == "" {
+		return defaultDBPort
+	}
+
+	return d.Port
 }
 
 // New loads and returns a Config from the given JSON file path.
@@ -132,7 +156,10 @@ func resolveEnvInStruct(s interface{}) {
 				if envVal, ok := os.LookupEnv(envKey); ok {
 					field.SetString(envVal)
 				} else {
+					// Clear the placeholder so an unset optional value (e.g. CORS_ORIGIN) reads as
+					// empty rather than the literal "ENV:..." string.
 					log.Printf("Warning: env var %s not set\n", envKey)
+					field.SetString("")
 				}
 			}
 		case reflect.Struct:

@@ -1,0 +1,20 @@
+package {{.LowerCase}}service
+
+import (
+	"context"
+
+	"github.com/jmoiron/sqlx"
+
+	"{{.Module}}/internal/model/{{.LowerCase}}"
+	req "{{.Module}}/internal/request"
+)
+
+// {{.RepositoryName}} defines the data access methods required by {{.ServiceName}}. The concrete
+// repository is wired in New; tests can substitute any implementation of this interface.
+type {{.RepositoryName}} interface {
+	Create(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error
+	Update(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error
+	Delete(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error
+	GetByID(ctx context.Context, db *sqlx.DB, id string, record *{{.LowerCase}}.{{.PascalCase}}) error
+	GetCollection(ctx context.Context, db *sqlx.DB, p *req.Request) ([]*{{.LowerCase}}.{{.PascalCase}}, error)
+}

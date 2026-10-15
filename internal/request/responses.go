@@ -13,7 +13,9 @@ var (
 	ErrCouldNotParseRequest  = errors.New("could not parse request")
 	ErrProcessingRequest     = errors.New("there was an error processing the request")
 	ErrBadUsernameOrPassword = errors.New("bad username or password")
+	ErrUserNotActive         = errors.New("user is not active")
 	ErrNotAuthorised         = errors.New("not authorised")
+	ErrTooManyRequests       = errors.New("too many attempts, please try again later")
 
 	NotFoundMsg = ErrorMessage{"message": "not found"}
 )

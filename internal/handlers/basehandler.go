@@ -8,6 +8,7 @@ import (
 
 	"github.com/doublehops/dh-go-framework/internal/app"
 	"github.com/doublehops/dh-go-framework/internal/logga"
+	"github.com/doublehops/dh-go-framework/internal/service/userservice"
 )
 
 // BaseHandler provides common handler utilities like JSON response writing and user retrieval.
@@ -16,16 +17,19 @@ type BaseHandler struct {
 }
 
 // GetUser retrieves the authenticated user ID from the request context.
-func (bh *BaseHandler) GetUser(ctx context.Context) int32 {
-	var intValue int32
-	var ok bool
-
+func (bh *BaseHandler) GetUser(ctx context.Context) string {
 	val := ctx.Value(app.UserIDKey)
-	if intValue, ok = val.(int32); !ok {
-		bh.Log.Error(ctx, "unable to convert userID to int32", nil)
-	}
+	strValue, _ := val.(string)
 
-	return intValue
+	return strValue
+}
+
+// GetRequestingUserRecord retrieves the authenticated UserRecord from the request context.
+func (bh *BaseHandler) GetRequestingUserRecord(ctx context.Context) *userservice.UserRecord {
+	val := ctx.Value(app.UserRecordKey)
+	record, _ := val.(*userservice.UserRecord)
+
+	return record
 }
 
 // WriteJSON writes a JSON-encoded response with the given status code.
