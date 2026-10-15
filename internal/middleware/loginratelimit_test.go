@@ -39,7 +39,7 @@ func TestClientIP(t *testing.T) {
 	}{
 		{name: "no X-Forwarded-For falls back to RemoteAddr", remoteAddr: "198.51.100.5:54321", trustFwd: true, expectedIP: "198.51.100.5"},
 		{name: "single X-Forwarded-For value is used", remoteAddr: "10.0.0.1:1234", forwardedFor: "203.0.113.9", trustFwd: true, expectedIP: "203.0.113.9"},
-		{name: "first of multiple X-Forwarded-For values is used", remoteAddr: "10.0.0.1:1234", forwardedFor: "203.0.113.9, 10.0.0.1", trustFwd: true, expectedIP: "203.0.113.9"},
+		{name: "last of multiple X-Forwarded-For values is used", remoteAddr: "10.0.0.1:1234", forwardedFor: "198.51.100.77, 203.0.113.9", trustFwd: true, expectedIP: "203.0.113.9"},
 		{name: "untrusted X-Forwarded-For is ignored", remoteAddr: "10.0.0.1:1234", forwardedFor: "203.0.113.9", trustFwd: false, expectedIP: "10.0.0.1"},
 	}
 

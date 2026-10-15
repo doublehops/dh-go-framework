@@ -10,7 +10,7 @@ import (
 
 // notUpdatedColumns are never written by an Update: the key, creation audit fields and the
 // soft-delete marker (which only Delete sets).
-var notUpdatedColumns = []string{"id", "created_by", "created_at", "deleted_at"}
+var notUpdatedColumns = []string{colID, colCreatedBy, colCreatedAt, colDeletedAt}
 
 const (
 	repositoryTemplate    = "./internal/scaffold/templates/repository.tmpl"
@@ -71,7 +71,7 @@ func (s *Scaffold) getQueryFields(cols []column) (string, string, string) {
 		selectColumns = append(selectColumns, selectCol)
 
 		// Don't add `id` column to beginning of update statement.
-		if f.Original == "id" {
+		if f.Original == colID {
 			continue
 		}
 		updateCol := fmt.Sprintf("record.%s", f.CapitalisedAbbr)
@@ -100,7 +100,7 @@ func (s *Scaffold) setColumnSQLParams(m *Model) {
 		selectStmt += fmt.Sprintf("\t%s,\n", col.Original)
 
 		// The repository sets a UUID on id before inserting; deleted_at is only set by Delete.
-		if col.Original != "deleted_at" {
+		if col.Original != colDeletedAt {
 			insertCols += fmt.Sprintf("\t%s,\n", col.Original)
 			insertQs += fmt.Sprintf("\t:%s,\n", col.Original)
 		}

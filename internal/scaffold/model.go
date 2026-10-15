@@ -38,8 +38,16 @@ func (s *Scaffold) createModel(ctx context.Context, m Model) error {
 	return nil
 }
 
+// Column names given special treatment by the generator.
+const (
+	colID        = "id"
+	colCreatedBy = "created_by"
+	colCreatedAt = "created_at"
+	colDeletedAt = "deleted_at"
+)
+
 // baseModelColumns are provided by model.BaseModel, so they're not generated on the model itself.
-var baseModelColumns = []string{"id", "created_by", "updated_by", "created_at", "updated_at", "deleted_at"}
+var baseModelColumns = []string{colID, colCreatedBy, "updated_by", colCreatedAt, "updated_at", colDeletedAt}
 
 // hasTimeProperty reports whether any generated model property is a *time.Time.
 func hasTimeProperty(columns []column) bool {

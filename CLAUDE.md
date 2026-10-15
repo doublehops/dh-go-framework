@@ -36,7 +36,7 @@ golangci-lint run --config ci/.golangci-lint.yml
 
 The app loads config from a JSON file (default `config.json`, test uses `config_test.json`) and resolves env vars from `.env`. JSON values prefixed with `ENV:` (e.g. `"ENV:MYSQL_HOST"`) are replaced at runtime with the matching env var. See `internal/config/config.go` for the full `Config` struct.
 
-Optional host settings: `corsOrigin` (exact frontend origin; empty disables CORS) and `trustForwardedFor` (use `X-Forwarded-For` for the login rate limiter — only behind a proxy that overwrites it). Unset `ENV:` values resolve to an empty string.
+Optional host settings: `corsOrigin` (exact frontend origin; empty disables CORS) and `trustForwardedFor` (key the login rate limiter on the last `X-Forwarded-For` entry — only when every request arrives through one reverse proxy that appends to it, such as an AWS ALB). Unset `ENV:` values resolve to an empty string.
 
 The database for development is MariaDB 10.5 via Docker:
 ```bash

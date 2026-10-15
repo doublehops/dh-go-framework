@@ -33,9 +33,9 @@ type loginAttempts struct {
 type LoginRateLimiter struct {
 	mu       sync.Mutex
 	attempts map[string]*loginAttempts
-	// trustForwardedFor keys clients by the first X-Forwarded-For entry instead of RemoteAddr.
-	// Only enable it behind a proxy that overwrites the header; otherwise a client can send a
-	// different fake value on every request and never hit the limit.
+	// trustForwardedFor keys clients by the last X-Forwarded-For entry instead of RemoteAddr.
+	// Enable it only when the app is reachable solely through one reverse proxy (e.g. an AWS ALB)
+	// that appends the connecting IP to the header.
 	trustForwardedFor bool
 }
 
@@ -104,12 +104,15 @@ func (l *LoginRateLimiter) Middleware(next httprouter.Handle) httprouter.Handle 
 }
 
 // clientIP extracts the caller's IP from the raw connection's RemoteAddr, or — when
-// trustForwardedFor is set (e.g. behind a load balancer that overwrites the header) — from the
-// first X-Forwarded-For entry when present.
+// trustForwardedFor is set — from the last X-Forwarded-For entry.
+//
+// It's the last entry, not the first, because a proxy appends the IP it saw to whatever the
+// client sent: everything to the left of the proxy's own entry is client-controlled, so keying on
+// the first entry would let a client rotate fake values and never hit the limit.
 func clientIP(r *http.Request, trustForwardedFor bool) string {
 	if fwd := r.Header.Get("X-Forwarded-For"); trustForwardedFor && fwd != "" {
-		if idx := strings.Index(fwd, ","); idx != -1 {
-			return strings.TrimSpace(fwd[:idx])
+		if idx := strings.LastIndex(fwd, ","); idx != -1 {
+			return strings.TrimSpace(fwd[idx+1:])
 		}
 
 		return strings.TrimSpace(fwd)

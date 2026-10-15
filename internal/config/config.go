@@ -28,8 +28,9 @@ type Host struct {
 	// CORSOrigin is the exact frontend origin allowed to call the API from a browser (e.g.
 	// "https://example.com"). Empty disables the CORS middleware.
 	CORSOrigin string `json:"corsOrigin"`
-	// TrustForwardedFor makes IP-based controls (the login rate limiter) use X-Forwarded-For. Only
-	// enable behind a proxy that overwrites the header, otherwise clients can spoof it.
+	// TrustForwardedFor makes IP-based controls (the login rate limiter) use the last
+	// X-Forwarded-For entry. Only enable when every request arrives through one reverse proxy
+	// that appends to the header (e.g. an AWS ALB).
 	TrustForwardedFor bool `json:"trustForwardedFor"`
 }
 
