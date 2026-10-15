@@ -63,7 +63,7 @@ Handler → Service → Repository → DB
 
 See `author` (handler, service, record, repository, model, tests) for the reference implementation.
 
-**IDs:** all primary and foreign keys are UUIDv4 strings stored as `CHAR(36)`, generated in the repository's `Create` with `uuid.New()`.
+**IDs:** all primary and foreign keys are UUIDv7 strings stored as `CHAR(36)`, generated in the repository's `Create` with `repository.NewID()` (`internal/repository/id.go`). Use it for every new id rather than calling `uuid` directly, so the version stays in one place.
 
 **Routing:** Routes are registered in `internal/routes/routes.go` using `httprouter-group`. All routes are prefixed `/v1`. Protected routes use `authMW` (`middleware.AuthMiddleware`), which validates the Bearer session token and puts the user ID (`app.UserIDKey`) and the `*userservice.UserRecord` (`app.UserRecordKey`) in the request context. To add a new resource, register its group in `GetV1Routes()`.
 

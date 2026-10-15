@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"{{.Module}}/internal/logga"
@@ -27,7 +26,7 @@ func New(logger *logga.Logga) *Repo {
 
 // Create assigns the record a new UUID and inserts it within the provided transaction.
 func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *{{.LowerCase}}.{{.PascalCase}}) error {
-	record.ID = uuid.New().String()
+	record.ID = repository.NewID()
 
 	_, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {

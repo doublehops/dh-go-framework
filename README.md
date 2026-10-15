@@ -48,7 +48,7 @@ err = a.Delete(ctx)                           // soft delete
 created, err := authorSrv.NewRecord(&author.Author{Name: "Jo"}).Create(ctx)
 ```
 
-All IDs are UUIDv4 strings (`CHAR(36)`), assigned by the repository on create.
+All IDs are UUIDv7 strings (`CHAR(36)`), assigned by the repository on create via `repository.NewID()`.
 
 Global roles (`standard_user`, `organisation_admin`, `master_admin`) are in the `user_role` table.
 Restrict a route group with `middleware.RequireRoles(...)` inside the auth middleware. The

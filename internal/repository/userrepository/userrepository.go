@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/doublehops/dh-go-framework/internal/logga"
@@ -29,7 +28,7 @@ func New(logger *logga.Logga) *Repo {
 
 // Create inserts a new user record within the provided transaction.
 func (r *Repo) Create(ctx context.Context, tx *sqlx.Tx, record *user.User) error {
-	record.ID = uuid.New().String()
+	record.ID = repository.NewID()
 
 	_, err := tx.NamedExec(insertRecordSQL, record)
 	if err != nil {
