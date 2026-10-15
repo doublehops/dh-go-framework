@@ -40,10 +40,10 @@ jobs:
           done
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
         with:
           go-version: '1.24'
 
@@ -60,14 +60,6 @@ jobs:
 
       - name: Check running containers
         run: docker ps
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24'
 
       - name: Install dependencies
         run: go mod tidy
